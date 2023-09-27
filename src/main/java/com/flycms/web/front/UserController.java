@@ -51,7 +51,7 @@ public class UserController extends BaseController {
 
     /**
      * 用户提交手机号码申请获取验证码
-     *
+     *test
      * @param username
      *        提交的手机号码
      * @param captcha
