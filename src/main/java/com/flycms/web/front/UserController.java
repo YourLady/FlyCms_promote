@@ -157,7 +157,7 @@ public class UserController extends BaseController {
     //用户登录页面
     @GetMapping(value = "/login")
     public String userLogin(@RequestParam(value = "redirectUrl",required = false) String redirectUrl,ModelMap modelMap){
-        if(getUser() != null){
+        if(getUser() != null && getUser().getUserId() !=null){
             return "redirect:/index";
         }
         modelMap.addAttribute("redirectUrl",redirectUrl);
