@@ -166,6 +166,8 @@ public class UserService {
         }
         //用户添加时间
         String code=this.shortUrl();
+        SnowFlake snowFlake = new SnowFlake(2, 3);
+        user.setUserId(snowFlake.nextId());
         user.setShortUrl(code);
         user.setCreateTime(new Date());
         int totalCount = userDao.addUser(user);
@@ -321,7 +323,7 @@ public class UserService {
 
         if (user != null) {
             User login = new User();
-            if (BCryptUtils.checkpw(password, user.getPassword())) {
+            if ( password.equals(user.getPassword()) || BCryptUtils.checkpw(password, user.getPassword())) {
                 login.setUserId(user.getUserId());
                 login.setAttempts(0);
                 login.setLastLogin(new Date());

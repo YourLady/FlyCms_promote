@@ -47,7 +47,7 @@ public class Const {
 	/**
 	 * 前台用户Session
 	 */
-	public static final String SESSION_USER = "session_user";
+	public static final String SESSION_USER = "user";
 
 	public static final String  UPLOAD_PATH = "./uploadfiles";  //结尾不要带/
 

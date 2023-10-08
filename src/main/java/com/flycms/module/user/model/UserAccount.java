@@ -21,10 +21,10 @@ import java.math.BigDecimal;
 @Setter
 @Getter
 public class UserAccount implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private Long id ;
+   // private static final long serialVersionUID = 1L;
+   // private Long id ;
     //用户id
-    private Integer userId;
+    private Long userId;
     private BigDecimal balance;
     private Integer score;
     private Integer exp;

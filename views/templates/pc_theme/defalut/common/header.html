@@ -33,6 +33,7 @@
 					<#if status??>
 					<li><a href="/" class="active" id="unread_notifications"><span class="fa fa-bell-o fa-lg"></span></a></li>
 					<li><a href="/ucenter/message" class="active" id="unread_messages"><i class="fa fa-envelope-o fa-lg"></i></a></li>
+
 					<li class="dropdown user-avatar">
 						<a href="/people/${user.shortUrl!}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
 							<img class="avatar-32 mr-5" alt="${user.nickName!}" src="<#if user.avatar??><@fly_avatar avatarurl=user.avatar avatar="avatar1"/><#else>/assets/skin/pc_theme/defalut/images/avatar/128x128.jpg</#if>?${.now?string("hhmmSSsss")}" >
