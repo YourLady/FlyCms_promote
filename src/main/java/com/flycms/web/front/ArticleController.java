@@ -1,15 +1,18 @@
 package com.flycms.web.front;
 
-import com.alibaba.fastjson.JSONArray;
 import com.flycms.core.base.BaseController;
 import com.flycms.core.entity.DataVo;
+import com.flycms.core.entity.FollowPublishContentVo;
+import com.flycms.core.entity.PublishContentVo;
 import com.flycms.module.article.model.*;
 import com.flycms.module.article.service.ArticleCategoryService;
 import com.flycms.module.article.service.ArticleService;
+import com.flycms.module.article.service.PublishContentService;
 import com.flycms.module.other.service.FilterKeywordService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -18,6 +21,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +36,7 @@ import java.util.Map;
  * @Date: 19:77 2018/9/17
  */
 @Controller
+@Slf4j
 public class ArticleController extends BaseController {
     @Autowired
     protected ArticleService articleService;
@@ -39,6 +44,8 @@ public class ArticleController extends BaseController {
     protected FilterKeywordService filterKeywordService;
     @Autowired
     protected ArticleCategoryService articleCategoryService;
+    @Autowired
+    protected PublishContentService publishContentService;
 
     //文章列表
     @GetMapping(value = {"/ac/","/ac/index","/ac/{id}" })
@@ -265,4 +272,128 @@ public class ArticleController extends BaseController {
         return data;
     }
 
+    //保存发布内容
+    @PostMapping("/user/save/publishContent")
+    @ResponseBody
+    public DataVo savePublishContent(@RequestBody PublishContentVo publishContentVo){
+        try {
+            publishContentService.publishContent(publishContentVo);
+        } catch (Exception e) {
+            log.error("发布失败，原因:{}",e);
+            return DataVo.failure("发布失败！");
+        }
+        return DataVo.success("发布成功！");
+    }
+
+    //删除发布内容
+    @GetMapping("/user/delete/publishContent")
+    @ResponseBody
+    public DataVo deletePublishContent(@RequestParam(value = "id", required = false) Long id){
+        try {
+            publishContentService.deletePublishContent(id);
+        } catch (Exception e) {
+            log.error("删除失败，原因:{}",e);
+            return DataVo.failure("删除失败！");
+        }
+        return DataVo.success("删除成功！");
+    }
+
+    //查询发布内容列表
+    @GetMapping("/user/query/publishContentList")
+    @ResponseBody
+    public DataVo queryPublishContentList(@RequestParam(value = "userId", required = false) String userId){
+        List<PublishContent> result = new ArrayList<>();
+        try {
+            result = publishContentService.queryPublishContentList(userId);
+        } catch (Exception e) {
+            log.error("查询列表失败，原因:{}",e);
+            return DataVo.failure("查询列表失败！");
+        }
+        return DataVo.success(result);
+    }
+
+
+    //查询关注人内容列表
+    @GetMapping("/user/query/followPublishContent")
+    @ResponseBody
+    public DataVo queryFollowPublishContent(@RequestParam(value = "userId", required = false) String userId){
+        List<FollowPublishContentVo> result = new ArrayList<>();
+        try {
+            result = publishContentService.queryFollowPublishContent(userId);
+        } catch (Exception e) {
+            log.error("查询关注人内容列表失败，原因:{}",e);
+            return DataVo.failure("查询关注人内容列表失败！");
+        }
+        return DataVo.success(result);
+    }
+
+    //点赞发布内容
+    @PostMapping("/user/like")
+    @ResponseBody
+    public DataVo likePublishContent(@RequestParam(value = "userId") String userId,
+                                     @RequestParam(value = "publishContentId") Long publishContentId){
+        try {
+            publishContentService.likePublishContent(userId,publishContentId);
+        } catch (Exception e) {
+            log.error("点赞失败，原因:{}",e);
+            return DataVo.failure("点赞失败！");
+        }
+        return DataVo.success("点赞成功！");
+    }
+
+    //取消点赞发布内容
+    @PostMapping("/user/cancelLike")
+    @ResponseBody
+    public DataVo cancelLikePublishContent(@RequestParam(value = "userId") String userId,
+                                     @RequestParam(value = "publishContentId") Long publishContentId){
+        try {
+            publishContentService.cancelLikePublishContent(userId,publishContentId);
+        } catch (Exception e) {
+            log.error("取消点赞失败，原因:{}",e);
+            return DataVo.failure("取消点赞失败！");
+        }
+        return DataVo.success("取消点赞成功！");
+    }
+
+    //收藏发布内容
+    @PostMapping("/user/collect")
+    @ResponseBody
+    public DataVo collectPublishContent(@RequestParam(value = "userId") String userId,
+                                     @RequestParam(value = "publishContentId") Long publishContentId){
+        try {
+            publishContentService.collectPublishContent(userId,publishContentId);
+        } catch (Exception e) {
+            log.error("收藏失败，原因:{}",e);
+            return DataVo.failure("收藏失败！");
+        }
+        return DataVo.success("收藏成功！");
+    }
+
+    //取消收藏发布内容
+    @PostMapping("/user/cancelCollect")
+    @ResponseBody
+    public DataVo cancelCollectPublishContent(@RequestParam(value = "userId") String userId,
+                                           @RequestParam(value = "publishContentId") Long publishContentId){
+        try {
+            publishContentService.cancelCollectPublishContent(userId,publishContentId);
+        } catch (Exception e) {
+            log.error("取消收藏失败，原因:{}",e);
+            return DataVo.failure("取消收藏失败！");
+        }
+        return DataVo.success("取消收藏成功！");
+    }
+
+    //查询收藏内容列表
+    @GetMapping("/user/query/collectPublishContent")
+    @ResponseBody
+    public DataVo queryCollectPublishContent(@RequestParam(value = "userId", required = false) String userId){
+        List<PublishContent> result = new ArrayList<>();
+        try {
+            result = publishContentService.queryCollectPublishContent(userId);
+        } catch (Exception e) {
+            log.error("查询收藏内容列表失败，原因:{}",e);
+            return DataVo.failure("查询收藏内容列表失败！");
+        }
+        return DataVo.success(result);
+    }
 }

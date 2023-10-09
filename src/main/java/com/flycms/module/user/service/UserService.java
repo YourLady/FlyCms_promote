@@ -2,12 +2,14 @@ package com.flycms.module.user.service;
 
 import com.flycms.constant.Const;
 import com.flycms.constant.SiteConst;
+import com.flycms.core.entity.UserVo;
 import com.flycms.core.utils.*;
 import com.flycms.core.entity.DataVo;
 import com.flycms.core.entity.PageVo;
 import com.flycms.module.other.service.EmailService;
 import com.flycms.module.score.service.ScoreRuleService;
 import com.flycms.module.user.dao.UserDao;
+import com.flycms.module.user.dao.UserFollowRelationDao;
 import com.flycms.module.user.model.User;
 import com.flycms.module.config.service.SmsapiService;
 import com.flycms.module.config.service.ConfigService;
@@ -60,6 +62,9 @@ public class UserService {
 
     @Autowired
     private SiteConst siteConst;
+
+    @Autowired
+    private UserFollowRelationDao userFollowRelationDao;
     // ///////////////////////////////
     // /////       增加       ////////
     // ///////////////////////////////
@@ -1123,5 +1128,39 @@ public class UserService {
     public boolean checkUserSessionByUserId(Long userId) {
         int totalCount = userDao.checkUserSessionByUserId(userId);
         return totalCount > 0 ? true : false;
+    }
+
+    /**
+     * 添加关注
+     * @param userId
+     * @param followUserId
+     */
+    public void saveFollow(String userId, String followUserId) {
+        UserFollowRelation userFollowRelation = new UserFollowRelation();
+        userFollowRelation.setFollowUserId(followUserId);
+        userFollowRelation.setUserId(userId);
+        userFollowRelation.setCreateBy(userId);
+        userFollowRelation.setCreateTime(new Date());
+        userFollowRelation.setUpdateBy(userId);
+        userFollowRelation.setUpdateTime(new Date());
+        userFollowRelationDao.addFollowRelation(userFollowRelation);
+    }
+
+    /**
+     * 取消关注
+     * @param userId
+     * @param followUserId
+     */
+    public void cancelFollow(String userId, String followUserId) {
+        userFollowRelationDao.deleteFollowRelation(userId,followUserId);
+    }
+
+    /**
+     * 查询关注人列表
+     * @param userId
+     * @return
+     */
+    public List<UserVo> queryFollowUsers(String userId) {
+        return userFollowRelationDao.selectFollowUser(userId);
     }
 }

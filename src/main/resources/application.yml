@@ -1,5 +1,5 @@
 server:
-  port: 80
+  port: 8081
 spring:
   application:
     name: FlyCms
@@ -39,9 +39,9 @@ spring:
     encoding: UTF-8
   ##数据库连接信息
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/flycms_date?useSSL=false&useUnicode=true&characterEncoding=UTF-8
-    username: promote
-    password: promote
+    url: jdbc:mysql://127.0.0.1:3307/flycms_date?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
+    username: root
+    password: 123456
     driver-class-name: com.mysql.jdbc.Driver
     ###################以下为druid增加的配置###########################
     type: com.alibaba.druid.pool.DruidDataSource

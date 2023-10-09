@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.flycms.module.article.dao.PublishContentDao">
+	<!-- 添加发布内容 -->
+	<insert id="savePublishContent" useGeneratedKeys="true" keyProperty="id">
+		insert into fly_user_publish
+		<!-- 添加表字段 -->
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">id,</if>
+            <if test="userId != null">user_id,</if>
+			<if test="promptId != null">prompt_id,</if>
+			<if test="title != null">title,</if>
+			<if test="content != null">content,</if>
+			<if test="isPublic != null">is_public,</if>
+			<if test="likeCount != null">like_count,</if>
+			<if test="commentCount != null">comment_count,</if>
+			<if test="collectCount != null">collect_count,</if>
+			<if test="publishTime != null">publish_time,</if>
+			<if test="createTime != null">create_time,</if>
+			<if test="createBy != null">create_by,</if>
+			<if test="updateTime != null">update_time,</if>
+			<if test="updateBy != null">update_by,</if>
+		</trim>
+		<!-- 注入控制层字段 -->
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">#{id},</if>
+            <if test="userId != null">#{userId},</if>
+			<if test="promptId != null">#{promptId},</if>
+			<if test="title != null">#{title},</if>
+			<if test="content != null">#{content},</if>
+			<if test="isPublic != null">#{isPublic},</if>
+			<if test="likeCount != null">#{likeCount},</if>
+			<if test="commentCount != null">#{commentCount},</if>
+			<if test="collectCount != null">#{collectCount},</if>
+			<if test="publishTime != null">#{publishTime},</if>
+			<if test="createTime != null">#{createTime},</if>
+			<if test="createBy != null">#{createBy},</if>
+			<if test="updateTime != null">#{updateTime},</if>
+			<if test="updateBy != null">#{updateBy},</if>
+		</trim>
+	</insert>
+
+	<!-- 按id删除发布内容 -->
+	<delete id="deletePublishContent" parameterType="java.lang.Long">
+		delete from fly_user_publish where id=#{id}
+	</delete>
+
+	<!-- 查询我发布的内容 -->
+	<select id="selectMyPublishContentList" resultType="com.flycms.module.article.model.PublishContent">
+		select * from fly_user_publish where user_id=#{userId} order by publish_time Desc
+	</select>
+
+	<!-- 点赞数+1-->
+	<update id="addLikeCount">
+		update fly_user_publish set like_count = like_count + 1 where id = #{publishContentId}
+	</update>
+
+	<!-- 点赞数-1-->
+	<update id="minusLikeCount">
+		update fly_user_publish set like_count = like_count - 1 where id = #{publishContentId}
+	</update>
+
+	<!-- 收藏数+1-->
+	<update id="addCollectCount">
+		update fly_user_publish set collect_count = collect_count + 1 where id = #{publishContentId}
+	</update>
+
+	<!-- 收藏数-1-->
+	<update id="minusCollectCount">
+		update fly_user_publish set collect_count = collect_count - 1 where id = #{publishContentId}
+	</update>
+</mapper>  

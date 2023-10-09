@@ -1,15 +1,17 @@
 package com.flycms.web.front;
+
+import com.flycms.constant.Const;
+import com.flycms.core.base.BaseController;
+import com.flycms.core.entity.DataVo;
+import com.flycms.core.entity.UserVo;
 import com.flycms.core.utils.Base64HelperUtils;
 import com.flycms.core.utils.CookieUtils;
 import com.flycms.core.utils.DateUtils;
 import com.flycms.core.utils.StringHelperUtils;
-import com.flycms.module.user.utils.UserSessionUtils;
-import com.flycms.constant.Const;
-import com.flycms.core.base.BaseController;
-import com.flycms.core.entity.DataVo;
 import com.flycms.module.question.service.ImagesService;
 import com.flycms.module.user.model.User;
 import com.flycms.module.user.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +31,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
+@Slf4j
 public class UserController extends BaseController {
     @Autowired
     protected UserService userService;
@@ -760,5 +764,57 @@ public class UserController extends BaseController {
         }
         data = userService.updateGetBackPassword(username,code,password);
         return data;
+    }
+
+    /**
+     * 关注用户
+     * @param userId 自己的用户id
+     * @param followUserId 关注人的用户ID
+     * @return
+     */
+    @ResponseBody
+    @PostMapping(value = "/save/follow")
+    public DataVo saveFollow(@RequestParam(value = "userId") String userId,
+                             @RequestParam(value = "followUserId") String followUserId){
+        try {
+            userService.saveFollow(userId,followUserId);
+        } catch (Exception e) {
+            log.error("关注失败，原因:{}",e);
+            return DataVo.failure("关注失败！");
+        }
+        return DataVo.success("关注成功！");
+    }
+
+    /**
+     * 取消关注
+     * @param userId 自己的用户id
+     * @param followUserId 关注人的用户ID
+     * @return
+     */
+    @ResponseBody
+    @PostMapping(value = "/cancel/follow")
+    public DataVo cancelFollow(@RequestParam(value = "userId") String userId,
+                             @RequestParam(value = "followUserId") String followUserId){
+        try {
+            userService.cancelFollow(userId,followUserId);
+        } catch (Exception e) {
+            log.error("取消关注失败，原因:{}",e);
+            return DataVo.failure("取消关注失败！");
+        }
+        return DataVo.success("取消关注成功！");
+    }
+
+    //查询关注人列表
+    @GetMapping("/query/followUsers")
+    @ResponseBody
+    public DataVo queryFollowUsers(@RequestParam(value = "userId", required = false) String userId){
+        List<UserVo> result = new ArrayList<>();
+        try {
+            result = userService.queryFollowUsers(userId);
+        } catch (Exception e) {
+            log.error("查询关注人列表失败，原因:{}",e);
+            return DataVo.failure("查询关注人列表失败！");
+        }
+        return DataVo.success(result);
     }
 }

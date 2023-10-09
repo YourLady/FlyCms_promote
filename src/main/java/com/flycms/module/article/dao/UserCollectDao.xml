@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.flycms.module.article.dao.UserCollectDao">
+	<!-- 添加收藏信息 -->
+	<insert id="addUserCollect" useGeneratedKeys="true" keyProperty="id">
+		insert into fly_user_collect
+		<!-- 添加表字段 -->
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">id,</if>
+			<if test="publishContentId != null">publish_content_id,</if>
+			<if test="userId != null">user_id,</if>
+			<if test="createTime != null">create_time,</if>
+			<if test="createBy != null">create_by,</if>
+			<if test="updateTime != null">update_time,</if>
+			<if test="updateBy != null">update_by,</if>
+		</trim>
+		<!-- 注入控制层字段 -->
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">#{id},</if>
+			<if test="publishContentId != null">#{publishContentId},</if>
+			<if test="userId != null">#{userId},</if>
+			<if test="createTime != null">#{createTime},</if>
+			<if test="createBy != null">#{createBy},</if>
+			<if test="updateTime != null">#{updateTime},</if>
+			<if test="updateBy != null">#{updateBy},</if>
+		</trim>
+	</insert>
+
+	<!-- 删除收藏信息 -->
+	<delete id="deleteUserCollect">
+		delete from fly_user_collect where publish_content_id = #{publishContentId} and user_id = #{userId}
+	</delete>
+
+	<select id="selectUserCollect" resultType="com.flycms.module.article.model.PublishContent">
+		select p.* from fly_user_publish p
+		where p.id in (select c.publish_content_id from fly_user_collect c where c.user_id = #{userId})
+		order by p.publish_time Desc
+	</select>
+
+</mapper>
