@@ -52,7 +52,7 @@
 		select * from fly_user_publish where user_id=#{userId} order by publish_time Desc
 	</select>
 
-	<!-- 点赞数+1-->
+    <!-- 点赞数+1-->
 	<update id="addLikeCount">
 		update fly_user_publish set like_count = like_count + 1 where id = #{publishContentId}
 	</update>
@@ -71,4 +71,23 @@
 	<update id="minusCollectCount">
 		update fly_user_publish set collect_count = collect_count - 1 where id = #{publishContentId}
 	</update>
+
+	<select id="selectMyFollowContent" resultType="com.flycms.module.article.model.PublishContent">
+		select * from fly_user_publish
+		where user_id in
+		<foreach collection="userList" index = "index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		and publish_time >= #{followTime}
+		and is_public = 1
+		order by publish_time Desc
+	</select>
+
+	<select id="selectOneHourContent" resultType="com.flycms.module.article.model.PublishContent">
+		select * from fly_user_publish where publish_time >= #{lastOneHour} and is_public = 1 order by publish_time Desc
+	</select>
+
+	<select id="selectOrderContent" resultType="com.flycms.module.article.model.PublishContent">
+		select * from fly_user_publish where is_public = 1 order by collect_count,comment_count,like_count desc
+	</select>
 </mapper>  

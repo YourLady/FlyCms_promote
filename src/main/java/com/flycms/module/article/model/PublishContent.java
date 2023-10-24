@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class PublishContent implements Serializable{
@@ -78,4 +79,9 @@ public class PublishContent implements Serializable{
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
+
+    /**
+     * 评论ID列表
+     */
+    private List<Long> commentList;
 }

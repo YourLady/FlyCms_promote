@@ -12,7 +12,6 @@ import com.flycms.module.other.service.FilterKeywordService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -21,10 +20,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 开发公司：28844.com<br/>
@@ -393,6 +389,21 @@ public class ArticleController extends BaseController {
         } catch (Exception e) {
             log.error("查询收藏内容列表失败，原因:{}",e);
             return DataVo.failure("查询收藏内容列表失败！");
+        }
+        return DataVo.success(result);
+    }
+
+
+    //查询推荐动态列表
+    @GetMapping("/user/query/recommendPublishContent")
+    @ResponseBody
+    public DataVo recommendPublishContent(@RequestParam(value = "userId", required = false) String userId){
+        List<PublishContent> result = new ArrayList<>();
+        try {
+            result = publishContentService.recommendPublishContent(userId);
+        } catch (Exception e) {
+            log.error("查询推荐列表失败，原因:{}",e);
+            return DataVo.failure("查询推荐列表失败！");
         }
         return DataVo.success(result);
     }

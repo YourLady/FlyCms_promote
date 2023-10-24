@@ -1,8 +1,10 @@
 package com.flycms.module.article.service;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.flycms.core.entity.FollowPublishContentVo;
 import com.flycms.core.entity.PublishContentVo;
 import com.flycms.core.entity.UserVo;
+import com.flycms.core.utils.DateUtils;
 import com.flycms.module.article.dao.PublishContentDao;
 import com.flycms.module.article.dao.UserCollectDao;
 import com.flycms.module.article.dao.UserLikeDao;
@@ -15,9 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.text.ParseException;
+import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * 发布内容处理类
@@ -138,5 +141,27 @@ public class PublishContentService {
     public List<PublishContent> queryCollectPublishContent(String userId) {
         List<PublishContent> result = userCollectDao.selectUserCollect(userId);
         return result;
+    }
+
+
+    public List<PublishContent> recommendPublishContent(String userId) throws ParseException {
+        List<PublishContent> result = new ArrayList<>();
+        // 获取15分钟前时间
+        Date followTime = DateUtils.addMin(-15);
+        List<UserVo> userVos = userFollowRelationDao.selectFollowUser(userId);
+        List<String> userList = userVos.stream().map(UserVo::getUserId).collect(Collectors.toList());
+        if (CollectionUtil.isNotEmpty(userList)){
+            List<PublishContent> followContents = publishContentDao.selectMyFollowContent(userList,followTime);
+            result.addAll(followContents);
+        }
+        // 最近1小时发布
+        Date lastOneHour = DateUtils.addMin(-60);
+        List<PublishContent> oneHourContents = publishContentDao.selectOneHourContent(lastOneHour);
+        result.addAll(oneHourContents);
+        // 收藏，评论，点赞排序
+        List<PublishContent> orderContents = publishContentDao.selectOrderContent();
+        result.addAll(orderContents);
+        List<PublishContent> publishContents = new ArrayList<>(new LinkedHashSet<>(result));
+        return publishContents;
     }
 }

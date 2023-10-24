@@ -2,14 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 
-<mapper namespace="com.flycms.module.user.dao.UserFollowRelationDao">
+<mapper namespace="com.flycms.module.article.dao.UserCommentDao">
 	<!-- 添加关注信息 -->
-	<insert id="addFollowRelation" useGeneratedKeys="true" keyProperty="id">
-		insert into fly_user_follow_relation
+	<insert id="addUserLike" useGeneratedKeys="true" keyProperty="id">
+		insert into fly_user_like
 		<!-- 添加表字段 -->
 		<trim prefix="(" suffix=")" suffixOverrides=",">
 			<if test="id != null">id,</if>
-			<if test="followUserId != null">follow_user_id,</if>
+			<if test="publishContentId != null">publish_content_id,</if>
 			<if test="userId != null">user_id,</if>
 			<if test="createTime != null">create_time,</if>
 			<if test="createBy != null">create_by,</if>
@@ -19,7 +19,7 @@
 		<!-- 注入控制层字段 -->
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
 			<if test="id != null">#{id},</if>
-			<if test="followUserId != null">#{followUserId},</if>
+			<if test="publishContentId != null">#{publishContentId},</if>
 			<if test="userId != null">#{userId},</if>
 			<if test="createTime != null">#{createTime},</if>
 			<if test="createBy != null">#{createBy},</if>
@@ -29,13 +29,8 @@
 	</insert>
 
 	<!-- 删除关注信息 -->
-	<delete id="deleteFollowRelation" parameterType="java.lang.String">
-		delete from fly_user_follow_relation where follow_user_id = #{followUserId} and user_id = #{userId}
+	<delete id="deleteUserLike">
+		delete from fly_user_like where publish_content_id = #{publishContentId} and user_id = #{userId}
 	</delete>
 
-	<!-- 查询关注人列表-->
-	<select id="selectFollowUser" resultType="com.flycms.core.entity.UserVo">
-		select r.follow_user_id as userId,u.avatar,u.nick_name
-		from fly_user_follow_relation r, fly_user u WHERE r.user_id = #{userId} and r.follow_user_id = u.user_id
-	</select>
 </mapper>

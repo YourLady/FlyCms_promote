@@ -477,4 +477,14 @@ public class DateUtils {
 		String result = sdf1.format(date) + "T" + sdf2.format(date) + "Z";
 		return result;
 	}
+
+	// 加分钟(特定时间)
+	public static Date addMin(int min) throws ParseException {
+		Calendar fromCal = Calendar.getInstance();
+
+		fromCal.setTime(new Date());
+		fromCal.add(Calendar.MINUTE, min);
+
+		return fromCal.getTime();
+	}
 }

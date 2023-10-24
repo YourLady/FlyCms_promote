@@ -4,6 +4,7 @@ import com.flycms.module.article.model.PublishContent;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -22,4 +23,10 @@ public interface PublishContentDao {
     void addCollectCount(@Param("publishContentId") Long publishContentId);
 
     void minusCollectCount(@Param("publishContentId") Long publishContentId);
+
+    List<PublishContent> selectMyFollowContent(@Param("userList")List<String> userList,@Param("followTime") Date followTime);
+
+    List<PublishContent> selectOneHourContent(@Param("lastOneHour") Date lastOneHour);
+
+    List<PublishContent> selectOrderContent();
 }
