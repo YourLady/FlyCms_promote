@@ -1,15 +1,15 @@
 package com.flycms.module.article.service;
 
 import cn.hutool.core.collection.CollectionUtil;
-import com.flycms.core.entity.FollowPublishContentVo;
-import com.flycms.core.entity.PublishContentVo;
-import com.flycms.core.entity.UserVo;
+import com.flycms.core.entity.*;
 import com.flycms.core.utils.DateUtils;
 import com.flycms.module.article.dao.PublishContentDao;
 import com.flycms.module.article.dao.UserCollectDao;
+import com.flycms.module.article.dao.UserCommentDao;
 import com.flycms.module.article.dao.UserLikeDao;
 import com.flycms.module.article.model.PublishContent;
 import com.flycms.module.article.model.UserCollect;
+import com.flycms.module.article.model.UserComment;
 import com.flycms.module.article.model.UserLike;
 import com.flycms.module.user.dao.UserFollowRelationDao;
 import org.springframework.beans.BeanUtils;
@@ -39,6 +39,9 @@ public class PublishContentService {
 
     @Autowired
     private UserCollectDao userCollectDao;
+
+    @Autowired
+    private UserCommentDao userCommentDao;
 
     /**
      * 发布内容
@@ -70,7 +73,24 @@ public class PublishContentService {
      */
     public List<PublishContent> queryPublishContentList(String userId) {
         List<PublishContent> result = publishContentDao.selectMyPublishContentList(userId);
+        // 查询内容评论
+        getComments(result);
         return result;
+    }
+
+    private void getComments(List<PublishContent> result) {
+        for (PublishContent publishContent : result) {
+            List<UserComment> comments = userCommentDao.selectByContentId(publishContent.getId());
+            List<CommentDetailVo> commentList = new ArrayList<>();
+            for (UserComment userComment : comments) {
+                CommentDetailVo commentDetailVo = new CommentDetailVo();
+                commentDetailVo.setCommentContent(userComment.getCommentContent());
+                commentDetailVo.setUserName(userComment.getCreateBy());
+                commentDetailVo.setCommentTime(userComment.getCreateTime());
+                commentList.add(commentDetailVo);
+            }
+            publishContent.setCommentList(commentList);
+        }
     }
 
 
@@ -89,6 +109,7 @@ public class PublishContentService {
             followPublishContentVo.setNickName(userVo.getNickName());
             // 查询内容
             List<PublishContent> publishContents = publishContentDao.selectMyPublishContentList(userVo.getUserId());
+            getComments(publishContents);
             followPublishContentVo.setPublishContentList(publishContents);
             result.add(followPublishContentVo);
         }
@@ -162,6 +183,19 @@ public class PublishContentService {
         List<PublishContent> orderContents = publishContentDao.selectOrderContent();
         result.addAll(orderContents);
         List<PublishContent> publishContents = new ArrayList<>(new LinkedHashSet<>(result));
+        getComments(publishContents);
         return publishContents;
+    }
+
+    public void addComment(CommentVo commentVo) {
+        UserComment userComment = new UserComment();
+        userComment.setPublishContentId(commentVo.getContentId());
+        userComment.setCommentContent(commentVo.getCommentContent());
+        userComment.setUserId(commentVo.getUserId());
+        userComment.setCreateBy(commentVo.getUserName());
+        userComment.setUpdateBy(commentVo.getUserName());
+        userComment.setUpdateTime(new Date());
+        userComment.setCreateTime(new Date());
+        userCommentDao.addComment(userComment);
     }
 }

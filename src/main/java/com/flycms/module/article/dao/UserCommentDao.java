@@ -1,23 +1,24 @@
 package com.flycms.module.article.dao;
 
-import com.flycms.module.article.model.UserLike;
-import org.apache.ibatis.annotations.Param;
+import com.flycms.module.article.model.UserComment;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface UserCommentDao {
 
 
     /**
-     * 取消点赞
-     * @param userId
-     * @param publishContentId
+     * 添加评论
+     * @param userComment
      */
-    void deleteUserLike(@Param("userId") String userId, @Param("publishContentId") Long publishContentId);
+    void addComment(UserComment userComment);
 
     /**
-     * 新增点赞
-     * @param userLike
+     * 查询评论列表
+     * @param id
+     * @return
      */
-    void addUserLike(UserLike userLike);
+    List<UserComment> selectByContentId(Long id);
 }

@@ -1,6 +1,7 @@
 package com.flycms.module.article.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.flycms.core.entity.CommentDetailVo;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -83,5 +84,5 @@ public class PublishContent implements Serializable{
     /**
      * 评论ID列表
      */
-    private List<Long> commentList;
+    private List<CommentDetailVo> commentList;
 }

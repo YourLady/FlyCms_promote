@@ -3,14 +3,15 @@
 
 
 <mapper namespace="com.flycms.module.article.dao.UserCommentDao">
-	<!-- 添加关注信息 -->
-	<insert id="addUserLike" useGeneratedKeys="true" keyProperty="id">
-		insert into fly_user_like
+	<!-- 添加评论信息 -->
+	<insert id="addComment" useGeneratedKeys="true" keyProperty="id">
+		insert into fly_user_comment
 		<!-- 添加表字段 -->
 		<trim prefix="(" suffix=")" suffixOverrides=",">
 			<if test="id != null">id,</if>
 			<if test="publishContentId != null">publish_content_id,</if>
 			<if test="userId != null">user_id,</if>
+			<if test="commentContent != null">comment_content,</if>
 			<if test="createTime != null">create_time,</if>
 			<if test="createBy != null">create_by,</if>
 			<if test="updateTime != null">update_time,</if>
@@ -21,6 +22,7 @@
 			<if test="id != null">#{id},</if>
 			<if test="publishContentId != null">#{publishContentId},</if>
 			<if test="userId != null">#{userId},</if>
+			<if test="commentContent != null">#{commentContent},</if>
 			<if test="createTime != null">#{createTime},</if>
 			<if test="createBy != null">#{createBy},</if>
 			<if test="updateTime != null">#{updateTime},</if>
@@ -28,9 +30,10 @@
 		</trim>
 	</insert>
 
-	<!-- 删除关注信息 -->
-	<delete id="deleteUserLike">
-		delete from fly_user_like where publish_content_id = #{publishContentId} and user_id = #{userId}
-	</delete>
+
+	<select id="selectByContentId" resultType="com.flycms.module.article.model.UserComment">
+		select * from fly_user_comment where publish_content_id = #{id} order by create_time desc
+	</select>
+
 
 </mapper>

@@ -1,6 +1,7 @@
 package com.flycms.web.front;
 
 import com.flycms.core.base.BaseController;
+import com.flycms.core.entity.CommentVo;
 import com.flycms.core.entity.DataVo;
 import com.flycms.core.entity.FollowPublishContentVo;
 import com.flycms.core.entity.PublishContentVo;
@@ -406,5 +407,18 @@ public class ArticleController extends BaseController {
             return DataVo.failure("查询推荐列表失败！");
         }
         return DataVo.success(result);
+    }
+
+    //添加评论
+    @PostMapping("/user/addComment")
+    @ResponseBody
+    public DataVo addComment(@RequestBody CommentVo commentVo){
+        try {
+            publishContentService.addComment(commentVo);
+        } catch (Exception e) {
+            log.error("添加评论失败，原因:{}",e);
+            return DataVo.failure("评论失败！");
+        }
+        return DataVo.success("评论成功！");
     }
 }

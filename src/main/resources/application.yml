@@ -39,9 +39,9 @@ spring:
     encoding: UTF-8
   ##数据库连接信息
   datasource:
-    url: jdbc:mysql://127.0.0.1:3307/flycms_date?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
-    username: root
-    password: 123456
+    url: jdbc:mysql://62.234.47.246:3306/flycms_date?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
+    username: flycms_date
+    password: 4kLMZftpW5zN3Mjh
     driver-class-name: com.mysql.jdbc.Driver
     ###################以下为druid增加的配置###########################
     type: com.alibaba.druid.pool.DruidDataSource
