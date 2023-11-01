@@ -29,4 +29,11 @@ public interface UserFollowRelationDao {
      * @return
      */
     List<UserVo> selectFollowUser(@Param("userId") String userId);
+
+    /**
+     * 查询用户信息
+     * @param userId
+     * @return
+     */
+    UserVo selectUserByUserId(@Param("userId") String userId);
 }

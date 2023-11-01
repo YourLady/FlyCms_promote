@@ -38,4 +38,8 @@
 		select r.follow_user_id as userId,u.avatar,u.nick_name
 		from fly_user_follow_relation r, fly_user u WHERE r.user_id = #{userId} and r.follow_user_id = u.user_id
 	</select>
+
+	<select id="selectUserByUserId" resultType="com.flycms.core.entity.UserVo">
+		select user_id,avatar,nick_name from fly_user WHERE user_id = #{userId}
+	</select>
 </mapper>

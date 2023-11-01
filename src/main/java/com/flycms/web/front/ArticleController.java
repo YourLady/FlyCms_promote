@@ -314,7 +314,7 @@ public class ArticleController extends BaseController {
     @GetMapping("/user/query/followPublishContent")
     @ResponseBody
     public DataVo queryFollowPublishContent(@RequestParam(value = "userId", required = false) String userId){
-        List<FollowPublishContentVo> result = new ArrayList<>();
+        List<PublishContent> result = new ArrayList<>();
         try {
             result = publishContentService.queryFollowPublishContent(userId);
         } catch (Exception e) {

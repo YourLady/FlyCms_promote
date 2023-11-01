@@ -73,6 +73,11 @@ public class PublishContentService {
      */
     public List<PublishContent> queryPublishContentList(String userId) {
         List<PublishContent> result = publishContentDao.selectMyPublishContentList(userId);
+        for (PublishContent publishContent : result) {
+            UserVo userVo = userFollowRelationDao.selectUserByUserId(publishContent.getUserId());
+            publishContent.setAvatar(userVo.getAvatar());
+            publishContent.setUserName(userVo.getNickName());
+        }
         // 查询内容评论
         getComments(result);
         return result;
@@ -83,9 +88,11 @@ public class PublishContentService {
             List<UserComment> comments = userCommentDao.selectByContentId(publishContent.getId());
             List<CommentDetailVo> commentList = new ArrayList<>();
             for (UserComment userComment : comments) {
+                UserVo userVo = userFollowRelationDao.selectUserByUserId(userComment.getUserId());
                 CommentDetailVo commentDetailVo = new CommentDetailVo();
                 commentDetailVo.setCommentContent(userComment.getCommentContent());
-                commentDetailVo.setUserName(userComment.getCreateBy());
+                commentDetailVo.setUserName(userVo.getNickName());
+                commentDetailVo.setAvatar(userVo.getAvatar());
                 commentDetailVo.setCommentTime(userComment.getCreateTime());
                 commentList.add(commentDetailVo);
             }
@@ -98,22 +105,25 @@ public class PublishContentService {
      * 查询关注人发布内容列表
      * @return
      */
-    public List<FollowPublishContentVo> queryFollowPublishContent(String userId) {
-        List<FollowPublishContentVo> result = new ArrayList<>();
+    public List<PublishContent> queryFollowPublishContent(String userId) {
+        List<PublishContent> result = new ArrayList<>();
         // 查询关注的人
         List<UserVo> followUsers = userFollowRelationDao.selectFollowUser(userId);
         for (UserVo userVo : followUsers) {
             FollowPublishContentVo followPublishContentVo = new FollowPublishContentVo();
-            followPublishContentVo.setUserId(userVo.getUserId());
-            followPublishContentVo.setAvatar(userVo.getAvatar());
-            followPublishContentVo.setNickName(userVo.getNickName());
             // 查询内容
             List<PublishContent> publishContents = publishContentDao.selectMyPublishContentList(userVo.getUserId());
+            for (PublishContent publishContent : publishContents) {
+                publishContent.setUserName(userVo.getNickName());
+                publishContent.setAvatar(userVo.getAvatar());
+            }
             getComments(publishContents);
             followPublishContentVo.setPublishContentList(publishContents);
-            result.add(followPublishContentVo);
+            result.addAll(publishContents);
         }
-        return result;
+        // 根据发布时间排序
+        List<PublishContent> collect = result.stream().sorted(Comparator.comparing(PublishContent::getPublishTime).reversed()).collect(Collectors.toList());
+        return collect;
     }
 
     @Transactional
@@ -139,7 +149,12 @@ public class PublishContentService {
 
 
     @Transactional
-    public void collectPublishContent(String userId, Long publishContentId) {
+    public void collectPublishContent(String userId, Long publishContentId) throws Exception{
+        List<PublishContent> publishContents = userCollectDao.selectUserCollect(userId);
+        List<Long> contentId = publishContents.stream().map(PublishContent::getId).collect(Collectors.toList());
+        if (contentId.contains(publishContentId)){
+            throw new Exception("不可重复收藏");
+        }
         UserCollect userCollect = new UserCollect();
         userCollect.setUserId(userId);
         userCollect.setPublishContentId(publishContentId);
@@ -161,6 +176,11 @@ public class PublishContentService {
 
     public List<PublishContent> queryCollectPublishContent(String userId) {
         List<PublishContent> result = userCollectDao.selectUserCollect(userId);
+        for (PublishContent publishContent : result) {
+            UserVo userVo = userFollowRelationDao.selectUserByUserId(publishContent.getUserId());
+            publishContent.setAvatar(userVo.getAvatar());
+            publishContent.setUserName(userVo.getNickName());
+        }
         return result;
     }
 
@@ -173,16 +193,32 @@ public class PublishContentService {
         List<String> userList = userVos.stream().map(UserVo::getUserId).collect(Collectors.toList());
         if (CollectionUtil.isNotEmpty(userList)){
             List<PublishContent> followContents = publishContentDao.selectMyFollowContent(userList,followTime);
+            followContents.forEach(item-> item.setFollowStat(1));
             result.addAll(followContents);
         }
         // 最近1小时发布
         Date lastOneHour = DateUtils.addMin(-60);
         List<PublishContent> oneHourContents = publishContentDao.selectOneHourContent(lastOneHour);
+        for (PublishContent publishContent : oneHourContents) {
+            if (userList.contains(publishContent.getUserId())){
+                publishContent.setFollowStat(1);
+            }
+        }
         result.addAll(oneHourContents);
         // 收藏，评论，点赞排序
         List<PublishContent> orderContents = publishContentDao.selectOrderContent();
+        for (PublishContent publishContent : orderContents) {
+            if (userList.contains(publishContent.getUserId())){
+                publishContent.setFollowStat(1);
+            }
+        }
         result.addAll(orderContents);
         List<PublishContent> publishContents = new ArrayList<>(new LinkedHashSet<>(result));
+        for (PublishContent publishContent : publishContents) {
+            UserVo userVo = userFollowRelationDao.selectUserByUserId(publishContent.getUserId());
+            publishContent.setAvatar(userVo.getAvatar());
+            publishContent.setUserName(userVo.getNickName());
+        }
         getComments(publishContents);
         return publishContents;
     }

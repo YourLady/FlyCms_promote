@@ -85,4 +85,19 @@ public class PublishContent implements Serializable{
      * 评论ID列表
      */
     private List<CommentDetailVo> commentList;
+
+    /**
+     * 头像
+     */
+    private String avatar;
+
+    /**
+     * 用户名
+     */
+    private String userName;
+
+    /**
+     * 关注状态（0-未关注  1-已关注）
+     */
+    private Integer followStat = 0;
 }

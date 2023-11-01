@@ -73,14 +73,15 @@
 	</update>
 
 	<select id="selectMyFollowContent" resultType="com.flycms.module.article.model.PublishContent">
-		select * from fly_user_publish
-		where user_id in
+		select p.*,u.avatar,u.nick_name from fly_user_publish p, fly_user u
+		where p.user_id in
 		<foreach collection="userList" index = "index" item="item" open="(" separator="," close=")">
 			#{item}
 		</foreach>
-		and publish_time >= #{followTime}
-		and is_public = 1
-		order by publish_time Desc
+		and u.user_id = p.user_id
+		and p.publish_time >= #{followTime}
+		and p.is_public = 1
+		order by p.publish_time Desc
 	</select>
 
 	<select id="selectOneHourContent" resultType="com.flycms.module.article.model.PublishContent">
