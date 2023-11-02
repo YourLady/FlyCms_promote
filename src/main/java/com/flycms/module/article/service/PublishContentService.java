@@ -77,6 +77,14 @@ public class PublishContentService {
             UserVo userVo = userFollowRelationDao.selectUserByUserId(publishContent.getUserId());
             publishContent.setAvatar(userVo.getAvatar());
             publishContent.setUserName(userVo.getNickName());
+            Integer likeCount = userLikeDao.selectLike(userId,publishContent.getId());
+            if (likeCount > 0){
+                publishContent.setLikeStat(1);
+            }
+            Integer collectCount = userCollectDao.selectCollect(userId,publishContent.getId());
+            if (collectCount > 0){
+                publishContent.setCollectStat(1);
+            }
         }
         // 查询内容评论
         getComments(result);
@@ -116,6 +124,14 @@ public class PublishContentService {
             for (PublishContent publishContent : publishContents) {
                 publishContent.setUserName(userVo.getNickName());
                 publishContent.setAvatar(userVo.getAvatar());
+                Integer likeCount = userLikeDao.selectLike(userId,publishContent.getId());
+                if (likeCount > 0){
+                    publishContent.setLikeStat(1);
+                }
+                Integer collectCount = userCollectDao.selectCollect(userId,publishContent.getId());
+                if (collectCount > 0){
+                    publishContent.setCollectStat(1);
+                }
             }
             getComments(publishContents);
             followPublishContentVo.setPublishContentList(publishContents);
@@ -180,6 +196,14 @@ public class PublishContentService {
             UserVo userVo = userFollowRelationDao.selectUserByUserId(publishContent.getUserId());
             publishContent.setAvatar(userVo.getAvatar());
             publishContent.setUserName(userVo.getNickName());
+            Integer likeCount = userLikeDao.selectLike(userId,publishContent.getId());
+            if (likeCount > 0){
+                publishContent.setLikeStat(1);
+            }
+            Integer collectCount = userCollectDao.selectCollect(userId,publishContent.getId());
+            if (collectCount > 0){
+                publishContent.setCollectStat(1);
+            }
         }
         return result;
     }
@@ -216,6 +240,14 @@ public class PublishContentService {
         List<PublishContent> publishContents = new ArrayList<>(new LinkedHashSet<>(result));
         for (PublishContent publishContent : publishContents) {
             UserVo userVo = userFollowRelationDao.selectUserByUserId(publishContent.getUserId());
+            Integer likeCount = userLikeDao.selectLike(userId,publishContent.getId());
+            if (likeCount > 0){
+                publishContent.setLikeStat(1);
+            }
+            Integer collectCount = userCollectDao.selectCollect(userId,publishContent.getId());
+            if (collectCount > 0){
+                publishContent.setCollectStat(1);
+            }
             publishContent.setAvatar(userVo.getAvatar());
             publishContent.setUserName(userVo.getNickName());
         }
@@ -233,5 +265,6 @@ public class PublishContentService {
         userComment.setUpdateTime(new Date());
         userComment.setCreateTime(new Date());
         userCommentDao.addComment(userComment);
+        publishContentDao.addCommentCount(commentVo.getContentId());
     }
 }

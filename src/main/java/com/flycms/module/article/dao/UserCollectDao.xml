@@ -38,5 +38,8 @@
 		where p.id in (select c.publish_content_id from fly_user_collect c where c.user_id = #{userId})
 		order by p.publish_time Desc
 	</select>
+	<select id="selectCollect" resultType="java.lang.Integer">
+		select count(1) from fly_user_collect where publish_content_id = #{publishContentId} and user_id = #{userId}
+	</select>
 
 </mapper>

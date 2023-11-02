@@ -30,4 +30,6 @@ public interface UserCollectDao {
      * @return
      */
     List<PublishContent> selectUserCollect(@Param("userId") String userId);
+
+    Integer selectCollect(@Param("userId") String userId, @Param("publishContentId") Long publishContentId);
 }

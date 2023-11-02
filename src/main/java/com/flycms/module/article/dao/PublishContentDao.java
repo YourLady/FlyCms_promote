@@ -29,4 +29,6 @@ public interface PublishContentDao {
     List<PublishContent> selectOneHourContent(@Param("lastOneHour") Date lastOneHour);
 
     List<PublishContent> selectOrderContent();
+
+    void addCommentCount(@Param("publishContentId") Long publishContentId);
 }

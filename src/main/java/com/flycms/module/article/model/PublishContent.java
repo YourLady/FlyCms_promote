@@ -100,4 +100,14 @@ public class PublishContent implements Serializable{
      * 关注状态（0-未关注  1-已关注）
      */
     private Integer followStat = 0;
+
+    /**
+     * 点赞状态 0-未点赞  1-已点赞
+     */
+    private Integer likeStat = 0;
+
+    /**
+     * 收藏状态 0-未收藏  1-已收藏
+     */
+    private Integer collectStat = 0;
 }

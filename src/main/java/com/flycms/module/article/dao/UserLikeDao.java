@@ -24,4 +24,12 @@ public interface UserLikeDao {
      * @param userLike
      */
     void addUserLike(UserLike userLike);
+
+    /**
+     * 查看是否点赞
+     * @param userId
+     * @param userId1
+     * @return
+     */
+    Integer selectLike(@Param("userId") String userId, @Param("publishContentId") Long publishContentId);
 }
