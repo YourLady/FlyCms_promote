@@ -25,6 +25,8 @@
 			<if test="keywords != null">keywords,</if>
 			<if test="description != null">description,</if>
 			<if test="status != null">status,</if>
+			<if test="promote_version != null">promote_version,</if>
+			<if test="public_flag != null">public_flag,</if>
 		</trim>
 		<!-- 注入控制层字段 -->
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -39,6 +41,8 @@
 			<if test="keywords != null">#{keywords},</if>
 			<if test="description != null">#{description},</if>
 			<if test="status != null">#{status},</if>
+			<if test="promote_version != null">#{promote_version},</if>
+			<if test="public_flag != null">#{public_flag},</if>
 		</trim>
 	</insert>
 
@@ -159,7 +163,14 @@
 		</set>
 		where id=#{id}
 	</update>
-
+	<!-- 按id更新文章审核状态，status：0未审核 1正常状态 2审核未通过 3删除-->
+	<update id="updateArticlePublicFlagById">
+		update fly_article
+		<set>
+			<if test="public_flag != null and public_flag !='' or public_flag==0">public_flag=#{public_flag},</if>
+		</set>
+		where id=#{id}
+	</update>
 	<!-- 按id更新文章审核状态，status：0未审核 1正常状态 2审核未通过 3删除-->
 	<update id="updateArticleStatusById">
 		update fly_article
@@ -220,7 +231,9 @@
     <select id="findArticleByShorturl" resultType="com.flycms.module.article.model.Article">
         select a.*,c.category_id,c.type_id from fly_article a inner join fly_article_category_merge c on a.id=c.article_id where a.short_url=#{shortUrl} and a.status = 1
     </select>
-
+	<select id="findArticleByUserShorturl" resultType="com.flycms.module.article.model.Article">
+		select a.*,c.category_id,c.type_id from fly_article a inner join fly_article_category_merge c on a.id=c.article_id where a.user_id=#{userId} and (a.content like CONCAT(CONCAT('%', #{shortUrl}),'%') or a.title like CONCAT(CONCAT('%', #{shortUrl}),'%')) and a.status = 1
+	</select>
 	<!-- 按id查询文章信息 -->
 	<select id="findArticleById" resultType="com.flycms.module.article.model.Article">
 		select a.*,c.category_id,c.type_id from fly_article a inner join fly_article_category_merge c on a.id=c.article_id
@@ -238,6 +251,8 @@
 	<select id="findArticleCountById" resultType="com.flycms.module.article.model.ArticleCount">
 		select * from fly_article_count where article_id=#{articleId}
 	</select>
+
+
 
 	<!-- 查询文章短域名是否被占用 -->
 	<select id="checkArticleByShorturl" resultType="Integer">
@@ -296,14 +311,24 @@
 			<if test="status == 1">and a.status = 0</if>
 			<if test="status == 2">and a.status = 1</if>
 			<if test="status == 3">and a.status = 2</if>
-			<if test="status == 4">and a.status = 3</if>
+			<if test="status == 4">and a.status = 3 and a.public_flag = 0</if>
 		</where>
 		order by
-		<if test="orderby != null">a.${orderby}</if>
+		<if test="orderby != null">a.promote_version</if>
 		<if test="order != null">${order}</if>
 		limit #{offset},#{rows}
 	</select>
 
+	<select id="getArticleListPer" resultType="com.flycms.module.article.model.Article">
+		select a.* from fly_article a
+		<where>
+			<if test="userId != null and userId !=''">and a.user_id=#{userId}</if>
+			<if test="public_flag == 0">and a.public_flag = 0</if>
+			<if test="public_flag == 1">and a.public_flag = 1</if>
+		</where>
+		order by a.title,a.promote_version
+		 desc
+	</select>
 	<!-- 文章索引总数 -->
 	<select id="getArticleIndexCount" resultType="Integer">
 		select count(1) from fly_article where status = 1

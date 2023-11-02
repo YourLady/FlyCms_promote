@@ -53,5 +53,8 @@ public class Article implements Serializable {
     //审核状态
     private Integer status;
 
-
+    private String promote_version;
+    private String promoteVersion;
+    private Integer publicFlag;
+    private Integer public_flag;
 }

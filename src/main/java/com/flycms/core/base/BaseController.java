@@ -1,6 +1,7 @@
 package com.flycms.core.base;
 
 import com.flycms.core.utils.AdminSessionUtils;
+import com.flycms.module.article.service.ArticleService;
 import com.flycms.module.user.utils.UserSessionUtils;
 import com.flycms.module.admin.model.Admin;
 import com.flycms.module.admin.service.AdminService;
@@ -38,6 +39,8 @@ public class BaseController {
 	protected AdminService adminService;
     @Autowired
 	protected UserService userService;
+	@Autowired
+	protected ArticleService articleService;
     @Resource
     protected HttpSession session;
 	@Autowired

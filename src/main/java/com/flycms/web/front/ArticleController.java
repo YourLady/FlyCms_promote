@@ -5,6 +5,7 @@ import com.flycms.core.entity.CommentVo;
 import com.flycms.core.entity.DataVo;
 import com.flycms.core.entity.FollowPublishContentVo;
 import com.flycms.core.entity.PublishContentVo;
+import com.flycms.core.utils.PromoteSaveFilter;
 import com.flycms.module.article.model.*;
 import com.flycms.module.article.service.ArticleCategoryService;
 import com.flycms.module.article.service.ArticleService;
@@ -134,6 +135,8 @@ public class ArticleController extends BaseController {
             }
             article.setUserId(getUser().getUserId());
             data = articleService.addArticle(article);
+            PromoteSaveFilter util = new PromoteSaveFilter();
+            util.SaveFileToFolder("/www/wwwroot/Vender_folder/",article,userService);
         } catch (Exception e) {
             data = DataVo.failure(e.getMessage());
         }
@@ -180,7 +183,43 @@ public class ArticleController extends BaseController {
         modelMap.addAttribute("user", getUser());
         return theme.getPcTemplate("article/edit_article");
     }
+    @GetMapping(value = "/ucenter/article/del-{id}")
+    @ResponseBody
+    public DataVo delArticle(@PathVariable(value = "id", required = false) String id){
+        DataVo data = DataVo.failure("操作失败");
+        data = articleService.deleteArticleById(Long.valueOf(id));
+        return data;
+    }
+    @GetMapping(value = "/ucenter/article/public-{id}-{public_flag}")//0-可视  1-非公
+    @ResponseBody
+    public void ArticlePublicFlag(@PathVariable(value = "id", required = false) String id,@PathVariable(value = "public_flag", required = false) String public_flag){
+        articleService.updateArticlePublicFlag(Long.valueOf(id),Integer.valueOf(public_flag));
+        return ;
+    }
+    @GetMapping(value = "/ucenter/article/search-{id}-{shortUrl}")
+    public String ArticleUserSearch(@PathVariable(value = "id", required = false) String id,@PathVariable(value = "shortUrl", required = false) String shortUrl,ModelMap modelMap){
 
+        //查询文章内容信息，由于缓存问题，统计要实时更新，所以统计和内容分开查询
+        Article article=articleService.findArticleByUserShorturl(shortUrl,Long.valueOf(id));
+        if(article==null){
+            return theme.getPcTemplate("404");
+        }
+        //违禁词过滤
+        article.setTitle(filterKeywordService.doFilter(article.getTitle()));
+        article.setContent(filterKeywordService.doFilter(article.getContent()));
+        //查询统计信息
+        ArticleCount count=articleService.findArticleCountById(article.getId());
+        article.setCountDigg(count.getCountDigg());
+        article.setCountBurys(count.getCountBurys());
+        article.setCountView(count.getCountView());
+        article.setCountComment(count.getCountComment());
+        if (getUser() != null) {
+            modelMap.addAttribute("user", getUser());
+        }
+        modelMap.addAttribute("article", article);
+        modelMap.addAttribute("p", "");
+        return theme.getPcTemplate("article/detail");
+    }
     //保存修改文章
     @PostMapping("/ucenter/article/article_update")
     @ResponseBody
@@ -204,6 +243,8 @@ public class ArticleController extends BaseController {
             article.setUserId(getUser().getUserId());
             article.setShortUrl(info.getShortUrl());
             data = articleService.editArticleById(article);
+            PromoteSaveFilter util = new PromoteSaveFilter();
+            util.EditFileToFolder("/www/wwwroot/Vender_folder/",article,userService);
         } catch (Exception e) {
             data = DataVo.failure(e.getMessage());
         }

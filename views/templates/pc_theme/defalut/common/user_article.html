@@ -17,6 +17,7 @@
                             <div class="author-content">
                                 <div class="author-name">
                                     <a href="/people/${userinfo.shortUrl!}">${userinfo.nickName!}</a>
+                                    <a>版本号[${article.promoteVersion!}]</a>
                                 </div>
                                 <div class="author-nick">
                                     <#if userinfo.signature??>${userinfo.signature!}<#else>这个家伙很懒什么也没留下！</#if>
@@ -34,9 +35,12 @@
                             <span>
                                 <button aria-label="赞同" type="button" class="vote-button VoteButton--up"><i class="fa fa-caret-up"></i> 赞同 <#if article.content?? && article.content!="">${article.countComment!}</button>
                                 <button aria-label="反对" type="button" class="vote-button VoteButton--down"><i class="fa fa-caret-down"></i></button>
+
                             </span>
                             <button type="button" class="Button Button--plain"> <span class="fa fa-comment">​</span> ${article.countComment!} 条评论</button>
                             <button type="button" class="Button Button--plain star"><i class="fa fa-star">​</i> 收藏</button>
+                            <button type="button" class="Button Button--plain star"><i class="fa fa-star"><a href="/ucenter/article/del-${article.id!}">​</a></i>删除</button>
+                            <button type="button" class="Button Button--plain star"><i class="fa fa-star"><a href="/ucenter/article/del-${article.id!}">​</a></i>是否公开</button>
                             <span class="shrink-content">收起 <i class="fa fa-angle-up"></i></span>
                         </div>
                     </div>

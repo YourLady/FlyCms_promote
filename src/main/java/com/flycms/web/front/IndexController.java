@@ -109,7 +109,7 @@ public class IndexController extends BaseController {
         modelMap.addAttribute("sort", sort);
         modelMap.addAttribute("p", p);
         modelMap.addAttribute("user", getUser());
-//        modelMap.addAttribute("info_page", new HashMap<String,Object>());
+        //modelMap.addAttribute("info_page", new HashMap<String,Object>());
         return theme.getPcTemplate("index");
     }
 

@@ -1,6 +1,10 @@
 package com.flycms.web.front;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.flycms.core.base.BaseController;
+import com.flycms.module.article.model.Article;
+import com.flycms.module.article.service.ArticleService;
 import com.flycms.module.user.model.User;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +15,10 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Open source house, All rights reserved
@@ -100,6 +108,42 @@ public class PeopleController extends BaseController {
         modelMap.addAttribute("count", userService.findUserCountById(people.getUserId()));
         modelMap.addAttribute("people", people);
         return theme.getPcTemplate("/people/list_article");
+    }
+
+    @GetMapping(value = "/people/{shortUrl}/{publicFlag}/promotes")
+    @ResponseBody
+    public HashMap<String,JSONArray> peoplePromote(@PathVariable(value = "shortUrl", required = false) String shortUrl,@PathVariable(value = "publicFlag", required = false) String publicFlag){
+        if (StringUtils.isBlank(shortUrl)) {
+            return null;
+        }
+        User people=userService.findUserByShorturl(shortUrl);
+        if(people==null){
+            return null;
+        }
+        Integer flag = Integer.valueOf(publicFlag);
+        List<Article> AList = articleService.findArticleIndexByPer(people.getUserId(),flag);
+        HashMap<String,JSONArray> RetTree = new HashMap<>();
+        JSONArray Jarry = new JSONArray();
+        String title1="",title2 = null;
+        for (Article a:AList) {
+            title1 = a.getTitle();
+            JSONObject object = new JSONObject();
+            object.put("article_id",a.getId());
+            object.put("title",a.getTitle());
+            object.put("promoteVersion",a.getPromoteVersion());
+            if(title1.equals(title2) || title2 == null){
+                Jarry.add(object);
+                title2 = a.getTitle();
+            }
+            else{
+                RetTree.put(title2,Jarry);
+                title2 = a.getTitle();
+                Jarry.clear();
+                Jarry.add(object);
+            }
+        }
+        RetTree.put(title1,Jarry);
+        return RetTree;
     }
 
     //用户问题列表页面

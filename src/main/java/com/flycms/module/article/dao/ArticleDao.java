@@ -86,6 +86,8 @@ public interface ArticleDao {
      */
     public int updateArticleStatusById(@Param("id") Long id,@Param("status") Integer status,@Param("recommend") Integer recommend);
 
+    public int updateArticlePublicFlagById(@Param("id") Long id,@Param("public_flag") Integer public_flag);
+
     //按id更新文章分类
     public int editArticleAndCcategoryById(@Param("categoryId") String categoryId,@Param("typeId") Integer typeId,@Param("articleId") Long articleId);
 
@@ -152,12 +154,13 @@ public interface ArticleDao {
     // ///////////////////////////////
     //按shortUrl查询文章信息
     public Article findArticleByShorturl(@Param("shortUrl") String shortUrl);
-
+    public Article findArticleByUserShorturl(@Param("shortUrl") String shortUrl,@Param("userId") Long userId);
     //按id查询文章信息
     public Article findArticleById(@Param("id") Long id,@Param("status") Integer status);
 
     //按id查询文章统计信息
     public ArticleCount findArticleCountById(@Param("articleId") Long articleId);
+
 
     /**
      * 查询文章短域名是否存在
@@ -223,7 +226,7 @@ public interface ArticleDao {
                                         @Param("order") String order,
                                         @Param("offset") Integer offset,
                                         @Param("rows") Integer rows);
-
+    public List<Article> getArticleListPer(@Param("userId") Long userId,@Param("public_flag")Integer public_flag);
     //文章索引总数
     public int getArticleIndexCount();
 

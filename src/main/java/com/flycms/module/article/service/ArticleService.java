@@ -18,6 +18,7 @@ import com.flycms.module.user.service.FeedService;
 import com.flycms.module.user.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -70,20 +71,20 @@ public class ArticleService {
         if(StringUtils.isBlank(article.getContent())){
             return data=DataVo.failure("内容不能为空！");
         }
-        if(StringUtils.isBlank(article.getCategoryId()) || article.getCategoryId().length() < 2){
-            return data=DataVo.failure("必须选择文章分类！");
-        }
+//        if(StringUtils.isBlank(article.getCategoryId()) || article.getCategoryId().length() < 2){
+//            return data=DataVo.failure("必须选择文章分类！");
+//        }
         //转换为数组
         String[] str = article.getCategoryId().split(",");
-        if((new Long(0)).equals(Long.parseLong(str[str.length - 1]))){
-            return data=DataVo.failure("必须选择文章分类！");
-        }
-        if(this.checkArticleByTitle(article.getTitle(),article.getUserId(),0L)){
-            return data=DataVo.failure("标题已存在！");
-        }
-        if (StringUtils.isBlank(article.getTags())) {
-            return DataVo.failure("话题不能为空，最少添加一个");
-        }
+//        if((new Long(0)).equals(Long.parseLong(str[str.length - 1]))){
+//            return data=DataVo.failure("必须选择文章分类！");
+//        }
+//        if(this.checkArticleByTitle(article.getTitle(),article.getUserId(),0L)){
+//            return data=DataVo.failure("标题已存在！");
+//        }
+//        if (StringUtils.isBlank(article.getTags())) {
+//            return DataVo.failure("话题不能为空，最少添加一个");
+//        }
         String[] tags = article.getTags().split(","); //转换为数组
         if (tags.length>5) {
             return DataVo.failure("话题数不能大于5个");
@@ -308,7 +309,9 @@ public class ArticleService {
     public int updateArticleWeight(Double weight,long articleId){
         return articleDao.updateArticleWeight(weight,articleId);
     }
-
+    public int updateArticlePublicFlag(long articleId,int public_falg){
+        return articleDao.updateArticlePublicFlagById(articleId,public_falg);
+    }
     /**
      * 按id更新文章浏览数量统计
      *
@@ -392,6 +395,11 @@ public class ArticleService {
         return articleDao.findArticleByShorturl(shortUrl);
     }
 
+
+    public Article findArticleByUserShorturl(String shortUrl, Long userId)
+    {
+        return articleDao.findArticleByUserShorturl(shortUrl,userId);
+    }
     /**
      * 按id查询文章信息
      *
@@ -540,6 +548,11 @@ public class ArticleService {
         return articleDao.findArticleCommentById(id,status);
     }
 
+    public List<Article> findArticleIndexByPer(Long id,Integer public_flag){
+
+
+        return articleDao.getArticleListPer(id,public_flag);
+    }
     /**
      * 文章翻页查询
      *

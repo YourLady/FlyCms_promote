@@ -15,6 +15,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistration;
 
 @SpringBootApplication
 @ServletComponentScan
@@ -28,6 +29,7 @@ public class Application extends SpringBootServletInitializer {
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
 		return application.sources(Application.class);
 	}
+
 
 	/**
 	 * @param args
