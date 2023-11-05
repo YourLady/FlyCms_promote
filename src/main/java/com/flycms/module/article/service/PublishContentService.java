@@ -3,15 +3,11 @@ package com.flycms.module.article.service;
 import cn.hutool.core.collection.CollectionUtil;
 import com.flycms.core.entity.*;
 import com.flycms.core.utils.DateUtils;
-import com.flycms.module.article.dao.PublishContentDao;
-import com.flycms.module.article.dao.UserCollectDao;
-import com.flycms.module.article.dao.UserCommentDao;
-import com.flycms.module.article.dao.UserLikeDao;
-import com.flycms.module.article.model.PublishContent;
-import com.flycms.module.article.model.UserCollect;
-import com.flycms.module.article.model.UserComment;
-import com.flycms.module.article.model.UserLike;
+import com.flycms.module.article.dao.*;
+import com.flycms.module.article.model.*;
+import com.flycms.module.user.dao.UserDao;
 import com.flycms.module.user.dao.UserFollowRelationDao;
+import com.flycms.module.user.model.User;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +38,12 @@ public class PublishContentService {
 
     @Autowired
     private UserCommentDao userCommentDao;
+
+    @Autowired
+    private UserDao userDao;
+
+    @Autowired
+    protected ArticleDao articleDao;
 
     /**
      * 发布内容
@@ -266,5 +268,39 @@ public class PublishContentService {
         userComment.setCreateTime(new Date());
         userCommentDao.addComment(userComment);
         publishContentDao.addCommentCount(commentVo.getContentId());
+    }
+
+    public List<SearchResult> search(String keyword, Integer type,String userId) {
+        List<SearchResult> result = new ArrayList<>();
+        if (type == 1){
+            // 用户
+
+            // 查询我关注的列表
+            List<UserVo> followUsers = userFollowRelationDao.selectFollowUser(userId);
+            List<String> myFollowUsers = followUsers.stream().map(UserVo::getUserId).collect(Collectors.toList());
+            List<User> userList = userDao.selectUserKeyWord(keyword);
+            for (User user : userList) {
+                SearchResult searchResult = new SearchResult();
+                searchResult.setUserName(user.getUserName());
+                searchResult.setUserId(user.getUserId().toString());
+                searchResult.setAvatar(user.getAvatar());
+                searchResult.setDescription(user.getDescription());
+                // 收藏数
+                List<PublishContent> publishContents = userCollectDao.selectUserCollect(user.getUserId().toString());
+                searchResult.setCollectNum(publishContents.size());
+                // 关注数
+                List<UserVo> followUser = userFollowRelationDao.selectFollowUser(user.getUserId().toString());
+                searchResult.setFollowNum(followUser.size());
+                // 关注状态
+                if (myFollowUsers.contains(user.getUserId().toString())){
+                    searchResult.setFollowStat(1);
+                }
+                result.add(searchResult);
+            }
+        } else if (type == 2){
+            // 标题
+            result = articleDao.queryArticleKeword(keyword);
+        }
+        return result;
     }
 }

@@ -462,4 +462,25 @@ public class ArticleController extends BaseController {
         }
         return DataVo.success("评论成功！");
     }
+
+    /**
+     * 搜索
+     * @param keyword
+     * @param type 1-用户 2-标题
+     * @return
+     */
+    @GetMapping("/user/search")
+    @ResponseBody
+    public DataVo search(@RequestParam(value = "keyword", required = false) String keyword,
+                         @RequestParam(value = "type", required = false) Integer type,
+                         @RequestParam(value = "userId", required = false) String userId){
+        List<SearchResult> result = new ArrayList<>();
+        try {
+            result = publishContentService.search(keyword,type,userId);
+        } catch (Exception e) {
+            log.error("搜索失败，原因:{}",e);
+            return DataVo.failure("搜索失败！");
+        }
+        return DataVo.success(result);
+    }
 }

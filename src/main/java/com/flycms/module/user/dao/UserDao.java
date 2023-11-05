@@ -474,4 +474,5 @@ public interface UserDao {
      */
     public int checkUserSessionByUserId(@Param("userId") Long userId);
 
+    List<User> selectUserKeyWord(@Param("keyword") String keyword);
 }

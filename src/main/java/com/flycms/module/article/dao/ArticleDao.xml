@@ -401,5 +401,10 @@
 	<select id="getArticleCommentByArticleId" resultType="com.flycms.module.article.model.ArticleComment">
 		select * from fly_article_comment where article_id=#{articleId} and status = 1
 	</select>
+	<select id="queryArticleKeword" resultType="com.flycms.module.article.model.SearchResult">
+		select a.title,a.description as articleDescription, u.user_id, u.user_name, u.avatar from fly_article a,fly_user u
+		         where a.title like CONCAT(CONCAT('%', #{keyword}),'%') and a.status = 1 and u.user_id = a.user_id
+
+	</select>
 
 </mapper>  

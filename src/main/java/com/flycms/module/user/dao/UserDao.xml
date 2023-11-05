@@ -547,4 +547,8 @@
 		select count(*) from fly_user_session where user_id = #{userId}
 	</select>
 
+    <select id="selectUserKeyWord" resultType="com.flycms.module.user.model.User">
+		select * from fly_user where nick_Name like CONCAT(CONCAT('%', #{keyword}),'%')
+	</select>
+
 </mapper>  

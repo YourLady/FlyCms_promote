@@ -284,4 +284,6 @@ public interface ArticleDao {
 
     //文章所有评论列表
     public List<ArticleComment> getArticleCommentByArticleId(@Param("articleId") Long articleId);
+
+    List<SearchResult> queryArticleKeword(String keyword);
 }
