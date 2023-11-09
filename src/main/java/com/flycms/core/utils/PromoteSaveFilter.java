@@ -1,5 +1,8 @@
 package com.flycms.core.utils;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.flycms.module.article.model.Article;
 import com.flycms.module.user.model.User;
 //import com.flycms.module.user.service.UserService;
@@ -9,6 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class PromoteSaveFilter {
 
@@ -17,8 +24,8 @@ public class PromoteSaveFilter {
         //String filePath = "C:/example.txt";
        // String content = "Hello, world!";
         User user = userService.findUserById(article.getUserId(),0);
-        String fileName = path + user.getUserId().toString() +File.separator+article.getTitle()+".txt";
-        File file = new File(path + user.getUserId().toString() +File.separator+article.getTitle()+".txt");
+        String fileName = path + user.getUserId().toString()+File.separator+article.getTitle()+File.separator+article.getTitle()+ (article.getPromoteVersion()==null?article.getPromote_version():article.getPromoteVersion())+".txt";
+        File file = new File(fileName);
         if(!file.isFile() && !file.exists())
         {
             String  path1 = fileName.substring(0,fileName.lastIndexOf(File.separator));
@@ -62,11 +69,13 @@ public class PromoteSaveFilter {
         //String filePath = "C:/example.txt";
         // String content = "Hello, world!";
         User user = userService.findUserById(article.getUserId(),0);
-        File file = new File(path + user.getUserId().toString() +File.separator+article.getTitle()+".txt");
+        String fileName = path + user.getUserId().toString()+File.separator+article.getTitle()+File.separator+article.getTitle()+ (article.getPromoteVersion()==null?article.getPromote_version():article.getPromoteVersion())+".txt";
+
+        File file = new File(fileName);
         FileWriter writer = null;
         if (file.exists()) {file.delete();}
-        else
-            try {
+
+        try {
             writer = new FileWriter(file);
             writer.write(article.getContent());
         } catch (IOException e) {
@@ -81,4 +90,6 @@ public class PromoteSaveFilter {
             }
         }
     }
+
+
 }

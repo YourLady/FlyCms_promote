@@ -42,4 +42,8 @@
 	<select id="selectUserByUserId" resultType="com.flycms.core.entity.UserVo">
 		select user_id,avatar,nick_name from fly_user WHERE user_id = #{userId}
 	</select>
+
+	<select id="selectUserByUserIdUYT" resultType="java.util.Date">
+		select last_login from fly_user WHERE user_id = #{userId}
+	</select>
 </mapper>

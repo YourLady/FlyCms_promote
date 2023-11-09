@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.flycms.core.base.BaseController;
 import com.flycms.module.article.model.Article;
+import com.flycms.module.article.model.Promote;
 import com.flycms.module.article.service.ArticleService;
 import com.flycms.module.user.model.User;
 import org.apache.commons.lang.math.NumberUtils;
@@ -12,10 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -110,7 +108,7 @@ public class PeopleController extends BaseController {
         return theme.getPcTemplate("/people/list_article");
     }
 
-    @GetMapping(value = "/people/{shortUrl}/{publicFlag}/promotes")
+    @PostMapping(value = "/people/{shortUrl}/{publicFlag}/promotes")
     @ResponseBody
     public HashMap<String,JSONArray> peoplePromote(@PathVariable(value = "shortUrl", required = false) String shortUrl,@PathVariable(value = "publicFlag", required = false) String publicFlag){
         if (StringUtils.isBlank(shortUrl)) {
@@ -129,6 +127,7 @@ public class PeopleController extends BaseController {
             title1 = a.getTitle();
             JSONObject object = new JSONObject();
             object.put("article_id",a.getId());
+            object.put("promoteid",a.getPromoteid());
             object.put("title",a.getTitle());
             object.put("promoteVersion",a.getPromoteVersion());
             if(title1.equals(title2) || title2 == null){
@@ -136,7 +135,12 @@ public class PeopleController extends BaseController {
                 title2 = a.getTitle();
             }
             else{
-                RetTree.put(title2,Jarry);
+                JSONArray Jarry1 = new JSONArray();
+                for (int i = 0; i< Jarry.size(); i++) {
+                    JSONObject value = Jarry.getJSONObject(i);
+                    Jarry1.add(value);
+                }
+                RetTree.put(title2,Jarry1);
                 title2 = a.getTitle();
                 Jarry.clear();
                 Jarry.add(object);
@@ -146,6 +150,35 @@ public class PeopleController extends BaseController {
         return RetTree;
     }
 
+
+    @PostMapping(value = "/people/{shortUrl}/{publicFlag}/promotesList")
+    @ResponseBody
+    public HashMap<String,JSONArray> peoplePromoteList(@PathVariable(value = "shortUrl", required = false) String shortUrl,@PathVariable(value = "publicFlag", required = false) String publicFlag){
+        if (StringUtils.isBlank(shortUrl)) {
+            return null;
+        }
+        User people=userService.findUserByShorturl(shortUrl);
+        if(people==null){
+            return null;
+        }
+        Integer flag = Integer.valueOf(publicFlag);
+        List<Promote> AList = articleService.findPromoteIndexByPer(people.getUserId(),flag);
+        HashMap<String,JSONArray> RetTree = new HashMap<>();
+        JSONArray Jarry = new JSONArray();
+        for (Promote a:AList) {
+            JSONObject object = new JSONObject();
+            object.put("promoteid",a.getId());
+            object.put("description",a.getDescription());
+            object.put("title",a.getTitle());
+            object.put("picture",a.getPicture());
+            object.put("publicflag",a.getPublicflag());
+            object.put("create_time",a.getCreateTime());
+            object.put("update_time",a.getUpdateTime());
+            Jarry.add(object);
+        }
+        RetTree.put(people.getUserId().toString(),Jarry);
+        return RetTree;
+    }
     //用户问题列表页面
     @GetMapping(value = "/people/{shortUrl}/share")
     public String peopleShare(@RequestParam(value = "p", defaultValue = "1") int p, @PathVariable(value = "shortUrl", required = false) String shortUrl, ModelMap modelMap){

@@ -49,7 +49,9 @@ public class DataVo implements Serializable {
 	public static final DataVo jump(String message, String url) {
 		return new DataVo(CODE_SUCCESS, message,url, NOOP);
 	}
-
+	public static final DataVo jump(String message, String url,Object data) {
+		return new DataVo(CODE_SUCCESS, message,url, data);
+	}
 	public static final DataVo failure(String message) {
 		return failure(CODE_FAILURED, message);
 	}

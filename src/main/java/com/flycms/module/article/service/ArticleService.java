@@ -1,19 +1,23 @@
 package com.flycms.module.article.service;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.flycms.core.entity.DataVo;
 import com.flycms.core.entity.PageVo;
+import com.flycms.core.entity.UserVo;
 import com.flycms.core.utils.ShortUrlUtils;
 import com.flycms.core.utils.SnowFlake;
 import com.flycms.module.article.dao.ArticleDao;
-import com.flycms.module.article.model.Article;
-import com.flycms.module.article.model.ArticleComment;
-import com.flycms.module.article.model.ArticleCount;
-import com.flycms.module.article.model.ArticleVotes;
+import com.flycms.module.article.dao.PromoteDao;
+import com.flycms.module.article.dao.UserCollectDao;
+import com.flycms.module.article.dao.UserCollectPromoteDao;
+import com.flycms.module.article.model.*;
 import com.flycms.module.config.service.ConfigService;
 import com.flycms.module.question.service.ImagesService;
 import com.flycms.module.search.service.SolrService;
 import com.flycms.module.topic.model.Topic;
 import com.flycms.module.topic.service.TopicService;
+import com.flycms.module.user.dao.UserFollowRelationDao;
 import com.flycms.module.user.service.FeedService;
 import com.flycms.module.user.service.UserService;
 import org.apache.commons.lang3.StringUtils;
@@ -26,10 +30,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Open source house, All rights reserved
@@ -48,6 +50,8 @@ public class ArticleService {
     @Autowired
     protected ArticleDao articleDao;
     @Autowired
+    protected PromoteDao promoteDao;
+    @Autowired
     private ConfigService configService;
     @Autowired
     private SolrService solrService;
@@ -59,6 +63,116 @@ public class ArticleService {
     protected TopicService topicService;
     @Autowired
     protected ImagesService imagesService;
+    @Autowired
+    private UserCollectPromoteDao userCollectPromoteDao;
+    @Autowired
+    private UserFollowRelationDao userFollowRelationDao;
+
+    public DataVo addPromote(Promote promote)  throws Exception {
+        DataVo data = DataVo.failure("操作失败");
+        if(StringUtils.isBlank(promote.getTitle())){
+            return data=DataVo.failure("标题不能为空！");
+        }
+        if(this.checkPromoteByTitle(promote.getTitle(),promote.getUserId(),0L)){
+            return data=DataVo.failure("标题已存在！");
+        }
+        if(StringUtils.isBlank(promote.getPicture())){
+            promote.setPicture("/upload/avatar/20231008/908433514935103488/avatar.jpg");
+        }
+        this.addPromoteData(promote);
+        return data;
+    }
+    @CacheEvict(value = "article", allEntries = true)
+    @Transactional
+    public Promote addPromoteData(Promote article)   throws Exception {
+        //转换为数组
+        //String[] str = article.getCategoryId().split(",");
+        SnowFlake snowFlake = new SnowFlake(2, 3);
+        article.setId(snowFlake.nextId());
+        String code=this.shortUrl();
+        //article.setShortUrl(code);
+        article.setTitle(StringEscapeUtils.escapeHtml4(article.getTitle()));
+        article.setCreateTime(new Date());
+        //article.setStatus(Integer.parseInt(configService.getStringByKey("user_article_verify")));
+        //article.setContent(imagesService.replaceContent(2,article.getId(),article.getUserId(),article.getContent()));
+        int totalCount=promoteDao.addPromote(article);
+
+        return article;
+    }
+
+
+    public DataVo addArticle2(Article article)  throws Exception {
+        DataVo data = DataVo.failure("操作失败");
+        if(StringUtils.isBlank(article.getTitle())){
+            return data=DataVo.failure("标题不能为空！");
+        }
+        if(StringUtils.isBlank(article.getContent())){
+            return data=DataVo.failure("内容不能为空！");
+        }
+        if(StringUtils.isBlank(article.getColor())){
+            return data=DataVo.failure("保存的颜色不能为空！");
+        }
+        if(StringUtils.isBlank(article.getContentstyle())){
+            return data=DataVo.failure("保存的字体不能为空！");
+        }
+        article=this.addArticle(article,null);
+        //索引本条信息
+        if (article.getStatus() == 1) {
+            solrService.indexArticleId(article.getId());
+        }
+        //更新
+        //this.weight(article,null);
+        data = DataVo.jump("文章添加成功！","/a/"+article.getShortUrl());
+        return data;
+    }
+
+    @CacheEvict(value = "article", allEntries = true)
+    @Transactional
+    public DataVo editArticleById2(Article article) throws Exception {
+        DataVo data = DataVo.failure("操作失败");
+        if(StringUtils.isBlank(article.getTitle())){
+            return data=DataVo.failure("标题不能为空！");
+        }
+        if(StringUtils.isBlank(article.getContent())){
+            return data=DataVo.failure("内容不能为空！");
+        }
+
+        article.setUpdateTime(new Date());
+        article.setStatus(Integer.parseInt(configService.getStringByKey("user_article_verify")));
+        article.setContent(imagesService.replaceContent(2,article.getId(),article.getUserId(),article.getContent()));
+        int totalCount=articleDao.editArticleById(article);
+        if(totalCount > 0){
+            //修改分类信息
+            //articleDao.editArticleAndCcategoryById(article.getCategoryId(),Integer.valueOf(str[str.length-1]),article.getId());
+
+            //索引本条信息
+            if(article.getStatus()==1){
+                solrService.indexArticleId(article.getId());
+            }else{
+                solrService.indexDeleteInfo(1,article.getId());
+            }
+//            if (!StringUtils.isBlank(article.getTags())) {
+//                topicService.deleteTopicAndInfoUpCount(1,article.getId());
+//                for (String string : tags) {
+//                    if (string != " " && string.length()>=2) {
+//                        Topic tag=topicService.findTopicByTopic(string);
+//                        if(!topicService.checkTopicByTopic(string)){
+//                            Topic addtag=topicService.addTopic(string,"",0,1,0,1);
+//                            topicService.addTopicAndInfo(article.getId(),addtag.getId(),1,article.getStatus());
+//                        }else{
+//                            topicService.updateTopicByCount(tag.getId());
+//                            topicService.addTopicAndInfo(article.getId(),tag.getId(),1,article.getStatus());
+//                        }
+//                    }
+//                }
+//            }
+            userService.updateArticleCount(article.getUserId());
+            data = DataVo.jump("文章更新成功！","/a/"+article.getShortUrl());
+        }else{
+            data=DataVo.failure("更新失败！");
+        }
+        return data;
+    }
     // ///////////////////////////////
     // /////      增加        ////////
     // ///////////////////////////////
@@ -70,6 +184,12 @@ public class ArticleService {
         }
         if(StringUtils.isBlank(article.getContent())){
             return data=DataVo.failure("内容不能为空！");
+        }
+        if(StringUtils.isBlank(article.getColor())){
+            return data=DataVo.failure("保存的颜色不能为空！");
+        }
+        if(StringUtils.isBlank(article.getContentstyle())){
+            return data=DataVo.failure("保存的字体不能为空！");
         }
 //        if(StringUtils.isBlank(article.getCategoryId()) || article.getCategoryId().length() < 2){
 //            return data=DataVo.failure("必须选择文章分类！");
@@ -104,7 +224,7 @@ public class ArticleService {
     @Transactional
     public Article addArticle(Article article,String[] tags)   throws Exception {
         //转换为数组
-        String[] str = article.getCategoryId().split(",");
+       // String[] str = article.getCategoryId().split(",");
         SnowFlake snowFlake = new SnowFlake(2, 3);
         article.setId(snowFlake.nextId());
         String code=this.shortUrl();
@@ -115,12 +235,13 @@ public class ArticleService {
         article.setContent(imagesService.replaceContent(2,article.getId(),article.getUserId(),article.getContent()));
         int totalCount=articleDao.addArticle(article);
         if(totalCount > 0) {
-            articleDao.addArticleAndCategory(article.getId(), article.getCategoryId(), Long.parseLong(str[str.length - 1]));
+          //  articleDao.addArticleAndCategory(article.getId(), article.getCategoryId(), Long.parseLong(str[str.length - 1]));
             //添加用户feed信息
             feedService.addUserFeed(article.getUserId(), 1, article.getId());
             //添加文章统计关联数据
             articleDao.addArticleCount(article.getId());
-            if (!StringUtils.isBlank(article.getTags())) {
+
+            if (null != tags && (!StringUtils.isBlank(article.getTags()))) {
                 for (String string : tags) {
                     if (string != " " && string.length() >= 2) {
                         Topic tag = topicService.findTopicByTopic(string);
@@ -182,6 +303,36 @@ public class ArticleService {
         topicService.deleteTopicAndInfoUpCount(1,article.getId());
         solrService.indexDeleteInfo(1,article.getId());
         userService.updateArticleCount(article.getUserId());
+        data = DataVo.jump("删除成功！","/admin/article/article_list");
+        return data;
+    }
+
+    @CacheEvict(value = "article", allEntries = true)
+    @Transactional
+    public DataVo deletePromoteById(Long pid) {
+        DataVo data = DataVo.failure("操作失败");
+        promoteDao.deletePromote(pid);
+        List<Article> list_id=articleDao.findIdById(pid);
+        for (Article article:list_id) {
+            Long id =article.getId();
+//            Article article = articleDao.findArticleById(id, 0);
+//            if (article == null) {
+//                data = DataVo.failure("该信息不存在！");
+//            }
+            articleDao.deleteArticleById(id);
+            //删除统计
+            articleDao.deleteArticleCountById(id);
+            //删除评论内容
+            articleDao.deleteArticleCommentById(id);
+            //按文章id删除用户顶或者踩记录
+            articleDao.deleteAllArticleVotesById(id);
+            //按id删除文章统计关联
+            articleDao.deleteArticleAndCcategoryById(id);
+            feedService.deleteUserFeed(article.getUserId(), 1, article.getId());
+            topicService.deleteTopicAndInfoUpCount(1, article.getId());
+            solrService.indexDeleteInfo(1, article.getId());
+            userService.updateArticleCount(article.getUserId());
+        }
         data = DataVo.jump("删除成功！","/admin/article/article_list");
         return data;
     }
@@ -414,6 +565,58 @@ public class ArticleService {
         return articleDao.findArticleById(id,status);
     }
 
+    @Cacheable(value = "article")
+    public Article findArticleByIdPromote(Long id){
+        return articleDao.findArticleByIdPromote(id);
+    }
+
+
+
+    @Transactional
+    public void collectPromote(String userId, Long promoteid) throws Exception{
+        List<Promote> publishContents = userCollectPromoteDao.selectUserCollectPromote(userId);
+        List<Long> contentId = publishContents.stream().map(Promote::getId).collect(Collectors.toList());
+        if (contentId.contains(promoteid)){
+            throw new Exception("不可重复收藏");
+        }
+        UserCollectPromote userCollect = new UserCollectPromote();
+        userCollect.setUserId(userId);
+        userCollect.setPromoteid(promoteid);
+        userCollect.setCreateBy(userId);
+        userCollect.setUpdateBy(userId);
+        userCollect.setCreateTime(new Date());
+        userCollect.setUpdateTime(new Date());
+        userCollectPromoteDao.addUserCollectPromote(userCollect);
+        // 收藏数加1
+        //publishContentDao.addCollectCount(publishContentId);
+    }
+    @Transactional
+    public void cancelcollectPromote(String userId, Long promoteid) {
+        userCollectPromoteDao.deleteUserCollectPromote(userId,promoteid);
+        // 收藏数减1
+        //publishContentDao.minusCollectCount(publishContentId);
+    }
+    public JSONArray queryCollectPublishContent(String userId) {
+        List<Promote> result = userCollectPromoteDao.selectUserCollectPromote(userId);
+
+        HashMap<String,JSONArray> RetTree = new HashMap<>();
+        JSONArray Jarry = new JSONArray();
+
+        for (Promote publishContent : result) {
+
+            Date date1 = userFollowRelationDao.selectUserByUserIdUYT(userId);
+            JSONObject object = new JSONObject();
+            if((publishContent.getUpdateTime()!=null && publishContent.getUpdateTime().after(date1)) || (publishContent.getCreateTime()!=null && publishContent.getCreateTime().after(date1))){
+                object.put("1",publishContent);
+            }else{
+                object.put("0",publishContent);
+            }
+            Jarry.add(object);
+
+        }
+        return Jarry;
+    }
+
     /**
      * 按id查询文章信息
      *
@@ -461,6 +664,11 @@ public class ArticleService {
      */
     public boolean checkArticleByTitle(String title,Long userId,Long id) {
         int totalCount = articleDao.checkArticleByTitle(title,userId,id);
+        return totalCount > 0 ? true : false;
+    }
+
+    public boolean checkPromoteByTitle(String title,Long userId,Long id) {
+        int totalCount = promoteDao.checkPromoteByTitle(title,userId,id);
         return totalCount > 0 ? true : false;
     }
 
@@ -549,9 +757,11 @@ public class ArticleService {
     }
 
     public List<Article> findArticleIndexByPer(Long id,Integer public_flag){
-
-
         return articleDao.getArticleListPer(id,public_flag);
+    }
+
+    public List<Promote> findPromoteIndexByPer(Long id,Integer public_flag){
+        return promoteDao.getPromoteListPer(id,public_flag);
     }
     /**
      * 文章翻页查询

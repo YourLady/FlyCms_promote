@@ -1,4 +1,4 @@
-package com.flycms.module.article.model;
+package com.flycms.core.entity;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -8,7 +8,7 @@ import java.util.Date;
 
 @Setter
 @Getter
-public class Article implements Serializable {
+public class ArticleVo implements Serializable {
     private static final long serialVersionUID = 1L;
     //文章id
     private Long id;
@@ -58,7 +58,6 @@ public class Article implements Serializable {
     private Integer status;
 
     private String promote_version;
-    private String promoteVersion;
-    private Integer publicFlag;
+
     private Integer public_flag;
 }

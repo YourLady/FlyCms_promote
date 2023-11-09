@@ -157,11 +157,11 @@ public interface ArticleDao {
     public Article findArticleByUserShorturl(@Param("shortUrl") String shortUrl,@Param("userId") Long userId);
     //按id查询文章信息
     public Article findArticleById(@Param("id") Long id,@Param("status") Integer status);
-
+    public Article findArticleByIdPromote(@Param("id") Long id);
     //按id查询文章统计信息
     public ArticleCount findArticleCountById(@Param("articleId") Long articleId);
 
-
+    public List<Article> findIdById(@Param("promoteid") Long promoteid);
     /**
      * 查询文章短域名是否存在
      *

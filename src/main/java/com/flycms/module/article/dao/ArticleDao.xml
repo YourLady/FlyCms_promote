@@ -17,11 +17,14 @@
 			<if test="id != null">id,</if>
             <if test="shortUrl != null">short_url,</if>
 			<if test="userId != null">user_id,</if>
+			<if test="promoteid != null">promoteid,</if>
 			<if test="title != null">title,</if>
+			<if test="bigtitle != null">bigtitle,</if>
 			<if test="content != null">content,</if>
 			<if test="createTime != null">create_time,</if>
 			<if test="style != null">style,</if>
 			<if test="color != null">color,</if>
+			<if test="contentstyle != null">contentstyle,</if>
 			<if test="keywords != null">keywords,</if>
 			<if test="description != null">description,</if>
 			<if test="status != null">status,</if>
@@ -33,11 +36,14 @@
 			<if test="id != null">#{id},</if>
             <if test="shortUrl != null">#{shortUrl},</if>
 			<if test="userId != null">#{userId},</if>
+			<if test="promoteid != null">#{promoteid},</if>
 			<if test="title != null">#{title},</if>
+			<if test="bigtitle != null">#{bigtitle},</if>
 			<if test="content != null">#{content},</if>
 			<if test="createTime != null">#{createTime},</if>
 			<if test="style != null">#{style},</if>
 			<if test="color != null">#{color},</if>
+			<if test="contentstyle != null">#{contentstyle},</if>
 			<if test="keywords != null">#{keywords},</if>
 			<if test="description != null">#{description},</if>
 			<if test="status != null">#{status},</if>
@@ -142,7 +148,7 @@
 
     <!-- 按文章id删除用户顶或者踩记录 -->
     <delete id="deleteAllArticleVotesById" parameterType="java.lang.Long">
-		delete from fly_article_votes where article_id=#{articleId}
+		delete from fly_article_votes where id=#{articleId}
 	</delete>
 
 	<!-- 按信息类型id、文章id、用户id删除用户顶或者踩记录 -->
@@ -157,6 +163,7 @@
 		update fly_article
 		<set>
 			<if test="title != null and title != ''">title=#{title},</if>
+			<if test="bigtitle != null and bigtitle != ''">bigtitle=#{bigtitle},</if>
 			<if test="content != null and content != ''">content=#{content},</if>
 			<if test="updateTime != null">update_time=#{updateTime},</if>
 			<if test="status != null and status != ''">status=#{status},</if>
@@ -247,6 +254,13 @@
 		</where>
 	</select>
 
+	<select id="findArticleByIdPromote" resultType="com.flycms.module.article.model.Article">
+		select a.* from fly_article a
+		<where>
+			  a.id=#{id}
+		</where>
+	</select>
+
 	<!-- 按id查询文章统计信息 -->
 	<select id="findArticleCountById" resultType="com.flycms.module.article.model.ArticleCount">
 		select * from fly_article_count where article_id=#{articleId}
@@ -320,14 +334,13 @@
 	</select>
 
 	<select id="getArticleListPer" resultType="com.flycms.module.article.model.Article">
-		select a.* from fly_article a
+		select a.* from fly_article a left join fly_promote b on a.promoteid = b.id
 		<where>
 			<if test="userId != null and userId !=''">and a.user_id=#{userId}</if>
-			<if test="public_flag == 0">and a.public_flag = 0</if>
-			<if test="public_flag == 1">and a.public_flag = 1</if>
+			<if test="public_flag == 0">and b.publicflag = 0</if>
+			<if test="public_flag == 1">and b.publicflag = 1</if>
 		</where>
-		order by a.title,a.promote_version
-		 desc
+		order by a.title,a.promote_version asc
 	</select>
 	<!-- 文章索引总数 -->
 	<select id="getArticleIndexCount" resultType="Integer">
@@ -407,4 +420,12 @@
 
 	</select>
 
+
+
+	<select id="findIdById" resultType="com.flycms.module.article.model.Article">
+		select * from fly_article
+		<where>
+			<if test="promoteid != null and promoteid !=''">and promoteid = #{promoteid}</if>
+		</where>
+	</select>
 </mapper>  

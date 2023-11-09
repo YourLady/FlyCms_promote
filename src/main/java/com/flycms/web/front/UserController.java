@@ -119,13 +119,13 @@ public class UserController extends BaseController {
             captcha=captcha.trim();
             String kaptcha = (String) session.getAttribute(Const.KAPTCHA_SESSION_KEY);
             // 校验验证码
-            if (captcha == null && "".equals(captcha)) {
-                return DataVo.failure("验证码不能为空");
-            }
-            captcha=captcha.toLowerCase();
-            if(!captcha.equals(kaptcha)){
-                return DataVo.failure("验证码错误");
-            }
+//            if (captcha == null && "".equals(captcha)) {
+//                return DataVo.failure("验证码不能为空");
+//            }
+//            captcha=captcha.toLowerCase();
+//            if(!captcha.equals(kaptcha)){
+//                return DataVo.failure("验证码错误");
+//            }
 
             if (StringUtils.isBlank(username)) {
                 return DataVo.failure("用户名不能为空");
@@ -200,23 +200,24 @@ public class UserController extends BaseController {
                 return DataVo.failure("密码最少6个字符，最多30个字符");
             }
             // 校验验证码
-            if (captcha != null) {
-                if (!captcha.equalsIgnoreCase(kaptcha)) {
-                    return DataVo.failure("验证码错误");
-                }
-            }else{
-                return DataVo.failure("验证码不能为空");
-            }
+//            if (captcha != null) {
+//                if (!captcha.equalsIgnoreCase(kaptcha)) {
+//                    return DataVo.failure("验证码错误");
+//                }
+//            }else{
+//                return DataVo.failure("验证码不能为空");
+//            }
             boolean keepLogin = "1".equals(rememberMe) ? true : false;
             User entity = userService.userLogin(username,password,keepLogin,request,response);
             if(entity==null){
                 return DataVo.failure("帐号或密码错误。");
             }else{
+                //DataVo.success(entity);
                 session.removeAttribute(Const.KAPTCHA_SESSION_KEY);
                 if (StringUtils.isNotEmpty(redirectUrl)){
-                    return DataVo.jump("操作成功", redirectUrl);
+                    return DataVo.jump("操作成功", redirectUrl,entity);
                 }
-                return DataVo.jump("操作成功", "/");
+                return DataVo.jump("操作成功", "/",entity);
             }
         } catch (Exception e) {
             return DataVo.failure("帐号或密码错误。");
@@ -342,14 +343,14 @@ public class UserController extends BaseController {
         DataVo data = DataVo.failure("操作失败");
         String kaptcha = (String) session.getAttribute("kaptcha");
         // 校验验证码
-        if (captcha != null) {
-            if (!captcha.equalsIgnoreCase(kaptcha)) {
-                return DataVo.failure("验证码错误");
-            }
-            session.removeAttribute(Const.KAPTCHA_SESSION_KEY);
-        }else{
-            return DataVo.failure("验证码不能为空");
-        }
+//        if (captcha != null) {
+//            if (!captcha.equalsIgnoreCase(kaptcha)) {
+//                return DataVo.failure("验证码错误");
+//            }
+//            session.removeAttribute(Const.KAPTCHA_SESSION_KEY);
+//        }else{
+//            return DataVo.failure("验证码不能为空");
+//        }
         if(!StringHelperUtils.checkPhoneNumber(mobile)) {
             return DataVo.failure("手机号码错误！");
         }

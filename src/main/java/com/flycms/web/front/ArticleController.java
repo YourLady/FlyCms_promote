@@ -1,10 +1,8 @@
 package com.flycms.web.front;
 
+import com.alibaba.fastjson.JSONArray;
 import com.flycms.core.base.BaseController;
-import com.flycms.core.entity.CommentVo;
-import com.flycms.core.entity.DataVo;
-import com.flycms.core.entity.FollowPublishContentVo;
-import com.flycms.core.entity.PublishContentVo;
+import com.flycms.core.entity.*;
 import com.flycms.core.utils.PromoteSaveFilter;
 import com.flycms.module.article.model.*;
 import com.flycms.module.article.service.ArticleCategoryService;
@@ -14,6 +12,7 @@ import com.flycms.module.other.service.FilterKeywordService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -120,6 +119,23 @@ public class ArticleController extends BaseController {
         return theme.getPcTemplate("article/add_article");
     }
 
+
+    @ResponseBody
+    @PostMapping(value = "/findPromoteArticleById/{id}")
+    public DataVo findPromoteArticleById(@PathVariable(value = "id", required = false) String id){
+        DataVo data = DataVo.failure("操作失败");
+        if (!NumberUtils.isNumber(id)) {
+            return data = DataVo.failure("id参数错误");
+        }
+        Article article=articleService.findArticleByIdPromote(Long.parseLong(id));
+        if(article==null){
+            return data = DataVo.failure("该内容不存在或者未审核！");
+        }
+        return DataVo.jump("操作成功", null,article);
+    }
+
+
+
     //保存添加文章
     @PostMapping("/ucenter/article/article_save")
     @ResponseBody
@@ -137,6 +153,65 @@ public class ArticleController extends BaseController {
             data = articleService.addArticle(article);
             PromoteSaveFilter util = new PromoteSaveFilter();
             util.SaveFileToFolder("/www/wwwroot/Vender_folder/",article,userService);
+        } catch (Exception e) {
+            data = DataVo.failure(e.getMessage());
+        }
+        return data;
+    }
+
+    @PostMapping("/user/promote/addPromoteSave")
+    @ResponseBody
+    public DataVo addPromoteSave(@RequestBody PromoteVo promote){
+        //DataVo data = DataVo.failure("操作失败");
+        try {
+            Promote promote1 = new Promote();
+
+            BeanUtils.copyProperties(promote,promote1);
+            articleService.addPromote(promote1);
+
+        } catch (Exception e) {
+            return DataVo.failure(e.getMessage());
+        }
+        return DataVo.success("发布成功！");
+    }
+
+    //添加评论
+    @PostMapping("/user/promote/addArticle")
+    @ResponseBody
+    public DataVo addPromoteArticle(@RequestBody ArticleVo ArticleVo){
+        DataVo data = DataVo.failure("操作失败");
+        try {
+            Article article = new Article();
+            BeanUtils.copyProperties(ArticleVo,article);
+            if(StringUtils.isBlank(article.getUserId().toString()))
+            {
+                article.setUserId(getUser().getUserId());
+            }
+
+            data = articleService.addArticle2(article);
+            PromoteSaveFilter util = new PromoteSaveFilter();
+            util.SaveFileToFolder("/www/wwwroot/promote_file/",article,userService);
+        } catch (Exception e) {
+            data = DataVo.failure(e.getMessage());
+        }
+        return data;
+    }
+
+    @PostMapping("/user/promote/editArticle")
+    @ResponseBody
+    public DataVo editPromoteArticle(@RequestBody ArticleVo ArticleVo){
+        DataVo data = DataVo.failure("操作失败");
+        try {
+            Article article = new Article();
+            BeanUtils.copyProperties(ArticleVo,article);
+            if(StringUtils.isBlank(article.getUserId().toString()))
+            {
+                article.setUserId(getUser().getUserId());
+            }
+
+            data = articleService.editArticleById2(article);
+            PromoteSaveFilter util = new PromoteSaveFilter();
+            util.EditFileToFolder("/www/wwwroot/promote_file/",article,userService);
         } catch (Exception e) {
             data = DataVo.failure(e.getMessage());
         }
@@ -183,14 +258,65 @@ public class ArticleController extends BaseController {
         modelMap.addAttribute("user", getUser());
         return theme.getPcTemplate("article/edit_article");
     }
-    @GetMapping(value = "/ucenter/article/del-{id}")
+    @PostMapping(value = "/user/article/delete")
     @ResponseBody
-    public DataVo delArticle(@PathVariable(value = "id", required = false) String id){
+    public DataVo delArticle(@RequestParam(value = "id", required = false) String id){
         DataVo data = DataVo.failure("操作失败");
         data = articleService.deleteArticleById(Long.valueOf(id));
         return data;
     }
-    @GetMapping(value = "/ucenter/article/public-{id}-{public_flag}")//0-可视  1-非公
+    @PostMapping(value = "/user/promote/delete")
+    @ResponseBody
+    public DataVo delpromote(@RequestParam(value = "id", required = false) String id){
+        DataVo data = DataVo.failure("操作失败");
+        data = articleService.deletePromoteById(Long.valueOf(id));
+        return data;
+    }
+
+
+    //收藏发布内容
+    @PostMapping("/user/promotecollect")
+    @ResponseBody
+    public DataVo collectPromote(@RequestParam(value = "userId") String userId, @RequestParam(value = "promoteid") Long promoteid){
+        try {
+            articleService.collectPromote(userId,promoteid);
+        } catch (Exception e) {
+            log.error("收藏失败，原因:{}",e);
+            return DataVo.failure("收藏失败！");
+        }
+        return DataVo.success("收藏成功！");
+    }
+
+    //取消收藏发布内容
+    @PostMapping("/user/cancelPromoteCollect")
+    @ResponseBody
+    public DataVo cancelCollectPromote(@RequestParam(value = "userId") String userId, @RequestParam(value = "promoteid") Long promoteid){
+        try {
+            articleService.cancelcollectPromote(userId,promoteid);
+        } catch (Exception e) {
+            log.error("取消收藏失败，原因:{}",e);
+            return DataVo.failure("取消收藏失败！");
+        }
+        return DataVo.success("取消收藏成功！");
+    }
+
+    //查询收藏内容列表
+    @PostMapping("/user/query/collectPromote")
+    @ResponseBody
+    public DataVo queryCollectPromote(@RequestParam(value = "userId", required = false) String userId){
+        JSONArray result = new JSONArray();
+        try {
+            result = articleService.queryCollectPublishContent(userId);
+        } catch (Exception e) {
+            log.error("查询收藏内容列表失败，原因:{}",e);
+            return DataVo.failure("查询收藏内容列表失败！");
+        }
+        return DataVo.success(result);
+    }
+
+
+
+    @PostMapping(value = "/ucenter/article/public-{id}-{public_flag}")//0-可视  1-非公
     @ResponseBody
     public void ArticlePublicFlag(@PathVariable(value = "id", required = false) String id,@PathVariable(value = "public_flag", required = false) String public_flag){
         articleService.updateArticlePublicFlag(Long.valueOf(id),Integer.valueOf(public_flag));

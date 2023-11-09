@@ -5,6 +5,7 @@ import com.flycms.module.user.model.UserFollowRelation;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -36,4 +37,6 @@ public interface UserFollowRelationDao {
      * @return
      */
     UserVo selectUserByUserId(@Param("userId") String userId);
+
+    Date selectUserByUserIdUYT(@Param("userId") String userId);
 }

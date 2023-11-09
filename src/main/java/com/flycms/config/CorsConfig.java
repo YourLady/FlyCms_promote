@@ -11,9 +11,12 @@ public class CorsConfig {
     //配置允许跨域访问的ip--从这些url发过来的请求，都是允许支持的跨源请求
     private static String[] orginVal=new String[]{
             "www.28844.com",
-            "28844.com",
+            "prompty.top",
             "localhost",
-            "127.0.0.1"         //ip与域名会被当成两个不同的url
+            "127.0.0.1",         //ip与域名会被当成两个不同的url
+            "cs.prompty.top",
+            "www.prompty.top",
+            "www.we-prompt.cn"
     };
 
     private void addAllowedOrigins(CorsConfiguration corsConfiguration){
