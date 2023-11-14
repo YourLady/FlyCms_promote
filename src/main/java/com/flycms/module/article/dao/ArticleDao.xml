@@ -30,6 +30,7 @@
 			<if test="status != null">status,</if>
 			<if test="promote_version != null">promote_version,</if>
 			<if test="public_flag != null">public_flag,</if>
+			<if test="token != null">token,</if>
 		</trim>
 		<!-- 注入控制层字段 -->
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -49,6 +50,7 @@
 			<if test="status != null">#{status},</if>
 			<if test="promote_version != null">#{promote_version},</if>
 			<if test="public_flag != null">#{public_flag},</if>
+			<if test="token != null">#{token},</if>
 		</trim>
 	</insert>
 

@@ -48,7 +48,9 @@ public class Const {
 	 * 前台用户Session
 	 */
 	public static final String SESSION_USER = "user";
-
+	public static final String  File_PATH = "./Files/";
 	public static final String  UPLOAD_PATH = "./uploadfiles";  //结尾不要带/
+
+	public static final String ABSOLUTE_PATH = "/www/wwwroot/FlyCms_promote-master/target/dist/FlyCms";
 
 }

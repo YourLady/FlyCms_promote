@@ -269,6 +269,9 @@
 	<update id="updateAvatar">
 		update fly_user set avatar=#{avatar} where user_id=#{userId}
 	</update>
+	<update id="updatePromoteAvatar">
+		update fly_promote set picture=#{picture} where id=#{id}
+	</update>
 
 	<!-- 更新用户最终积分 -->
 	<update id="updateUserAccountScore">

@@ -19,6 +19,7 @@ import com.flycms.core.utils.*;
 import com.flycms.constant.Const;
 import com.flycms.core.entity.DataVo;
 import com.flycms.core.entity.PageVo;
+import com.flycms.module.article.model.Promote;
 import com.flycms.module.question.dao.ImagesDao;
 import com.flycms.module.question.model.Images;
 import com.flycms.module.question.model.ImagesInfoMerge;
@@ -178,6 +179,34 @@ public class ImagesService {
 		return data;
 	}
 
+
+	public DataVo saveAvatarPromoteFile(String promoteid, BufferedImage image) throws ParseException {
+		DataVo data = DataVo.failure("操作失败");
+		try {
+			String savePath = Const.UPLOAD_PATH +"/upload/";
+			//文件保存目录URL
+			String saveUrl  = "/upload/";
+			//创建文件夹
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+			//String ymds=sdf.format(user.getCreateTime());
+			savePath += "promote/"+promoteid + "/";
+			saveUrl += "promote/"+promoteid + "/";
+			File dirFile = new File(savePath);
+			if (!dirFile.exists()) {
+				dirFile.mkdirs();
+			}
+			String fileName = "avatar.jpg";
+			File file = new File(savePath + fileName);
+			if (!file.exists())
+				file.createNewFile();
+			ImageIO.write(image, "PNG", file);
+			//userService.updatePromoteAvatar(promoteid,saveUrl + fileName);
+			return DataVo.jump("上传成功", saveUrl + fileName,promoteid);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return data;
+	}
 	// ///////////////////////////////
 	// ///// 刪除 ////////
 	// ///////////////////////////////

@@ -188,7 +188,7 @@ public interface UserDao {
      * @return
      */
     public int updateAvatar(@Param("userId") Long userId, @Param("avatar") String avatar);
-
+    public int updatePromoteAvatar(@Param("id") Long id, @Param("picture") String picture);
     /**
      * 更新用户最终积分
      *

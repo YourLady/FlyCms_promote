@@ -25,6 +25,12 @@
     </parent>
     <dependencies>
         <dependency>
+            <groupId>com.tencentcloudapi</groupId>
+            <artifactId>tencentcloud-sdk-java</artifactId>
+            <version>3.1.900</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
@@ -183,12 +189,12 @@
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>2.9.1</version>
         </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
-            <scope>compile</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>log4j</groupId>-->
+<!--            <artifactId>log4j</artifactId>-->
+<!--            <version>1.2.16</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
         <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -364,31 +370,12 @@
                 </configuration>
             </plugin>
             <plugin>
-                <!-- 主要用来打包主jar-->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.6</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <!--启动文件入口类,就是springboot启动main方法所在类 -->
-                            <mainClass>com.flycms.Application</mainClass>
-                            <!-- 主jar依赖的jar包路径-->
-                            <classpathPrefix>lib/</classpathPrefix>
-                            <addClasspath>true</addClasspath>
-                        </manifest>
-                        <manifestEntries>
-                            <!-- 在Class-Path下添加配置文件的路径 -->
-                            <Class-Path>resources/</Class-Path>
-                        </manifestEntries>
-                    </archive>
-                    <!-- 不把配置文件和html文件打进主jar内-->
-                    <excludes>
-                        <exclude>**/*.java</exclude>
-                        <exclude>*.yml</exclude>
-                    </excludes>
-                </configuration>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.7.13</version>
             </plugin>
+
+
         </plugins>
     </build>
 

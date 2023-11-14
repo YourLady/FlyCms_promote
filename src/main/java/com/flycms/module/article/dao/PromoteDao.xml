@@ -49,6 +49,12 @@
 		order by a.create_time asc
 	</select>
 
+	<select id="getPromotePer" resultType="com.flycms.module.article.model.Promote">
+		select a.* from fly_promote a
+		<where>
+			<if test="id != null and id !=''">and a.id=#{id}</if>
+		</where>
+	</select>
 
 
 	<select id="checkPromoteByTitle" resultType="Integer">

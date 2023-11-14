@@ -21,6 +21,7 @@ public class ArticleVo implements Serializable {
     private String title;
 
     private String bigtitle;
+    private String token;
     //分类id
     private Long typeId;
     //分类所有归属id

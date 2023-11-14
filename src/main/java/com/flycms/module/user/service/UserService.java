@@ -6,6 +6,7 @@ import com.flycms.core.entity.UserVo;
 import com.flycms.core.utils.*;
 import com.flycms.core.entity.DataVo;
 import com.flycms.core.entity.PageVo;
+import com.flycms.module.config.service.TencentSmsapiService;
 import com.flycms.module.other.service.EmailService;
 import com.flycms.module.score.service.ScoreRuleService;
 import com.flycms.module.user.dao.UserDao;
@@ -49,6 +50,9 @@ public class UserService {
     private SmsapiService smsapiService;
 
     @Autowired
+    private TencentSmsapiService tencentSmsapiService;
+
+    @Autowired
     private ConfigService configService;
 
     @Autowired
@@ -88,17 +92,17 @@ public class UserService {
     public DataVo addUserReg(int userType,String userName, String password, String code, String invite, HttpServletRequest request,HttpServletResponse response) throws Exception {
         DataVo data = DataVo.failure("请勿非法传递参数");
         if(Integer.parseInt(configService.getStringByKey("user_reg"))==0){
-            return data =DataVo.failure("本站停止注册！如有需要请联系管理员！");
+            return DataVo.failure("本站停止注册！如有需要请联系管理员！");
         }
         if(userType==1 || userType==3){
             //手机号码注册
             if(this.checkUserByMobile(userName,null) || this.checkUserByUsername(userName)){
-                return data =DataVo.failure("已被手机号码或者用户名占用！");
+                return DataVo.failure("已被手机号码或者用户名占用！");
             }
         }else if(userType==2){
             //邮箱注册
             if(this.checkUserByEmail(userName,null)){
-                return data =DataVo.failure("该邮箱以被占用！");
+                return DataVo.failure("该邮箱以被占用！");
             }
         }
         if(userType<3 && userType >0){
@@ -135,17 +139,17 @@ public class UserService {
         userDao.addUser(user);
         //添加用户组权限
         userDao.addUserAndGroup(Long.parseLong(configService.getStringByKey("user_activation_role")),user.getUserId());
-        if(invite==null){
-            invite=CookieUtils.getCookie(request,"invite");
-        }
-        //添加邀请和被邀请用户关联信息
-        if (NumberUtils.isNumber(invite)) {
-            if(this.checkUserById(Long.parseLong(invite))){
-                userInviteService.addUserInvite(user.getUserId(),Long.parseLong(invite));
-                // 邀请奖励
-                scoreRuleService.scoreRuleBonus(Long.parseLong(invite), 2L,user.getUserId());
-            }
-        }
+//        if(invite==null){
+//            invite=CookieUtils.getCookie(request,"invite");
+//        }
+//        //添加邀请和被邀请用户关联信息
+//        if (NumberUtils.isNumber(invite)) {
+//            if(this.checkUserById(Long.parseLong(invite))){
+//                userInviteService.addUserInvite(user.getUserId(),Long.parseLong(invite));
+//                // 邀请奖励
+//                scoreRuleService.scoreRuleBonus(Long.parseLong(invite), 2L,user.getUserId());
+//            }
+//        }
         //添加用户统计表
         userDao.addUserCount(user.getUserId());
         //添加用户关联信息
@@ -200,12 +204,14 @@ public class UserService {
         }
         int count=userDao.checkUserActivationCount(phoneNumber,DateUtils.getDay());
         if(count<=5) {
-            smsapiService.mobileRegisterCode(phoneNumber, MathUtils.getRandomCode(6),1);
+            //smsapiService.mobileRegisterCode(phoneNumber, MathUtils.getRandomCode(6),1);
+            tencentSmsapiService.SendMsgTen(phoneNumber,1);
         }else {
             return DataVo.failure("您今日已超出申请次数！");
         }
         return DataVo.success("验证码已发送，请查收！", DataVo.NOOP);
     }
+
 
     /**
      * 用户手机找回密码申请获取验证码
@@ -223,7 +229,8 @@ public class UserService {
         }
         int count=userDao.checkUserActivationCount(mobile,DateUtils.getDay());
         if(count<=5) {
-            smsapiService.mobileRegisterCode(mobile, MathUtils.getRandomCode(6),3);
+            //smsapiService.mobileRegisterCode(mobile, MathUtils.getRandomCode(6),3);
+            tencentSmsapiService.SendMsgTen(mobile,3);
         }else {
             return DataVo.failure("您今日已超出申请次数！");
         }
@@ -424,6 +431,10 @@ public class UserService {
         return userDao.updateAvatar(userId,avatar);
     }
 
+    @CacheEvict(value = "promote", allEntries = true)
+    public int updatePromoteAvatar(Long userId,String avatar) {
+        return userDao.updatePromoteAvatar(userId,avatar);
+    }
     /**
      * 更新统计用户所有提的问题数量
      *         问题数量
@@ -579,7 +590,8 @@ public class UserService {
         }
         int count=userDao.checkUserActivationCount(phoneNumber,DateUtils.getDay());
         if(count<=5) {
-            smsapiService.mobileRegisterCode(phoneNumber, MathUtils.getRandomCode(6),2);
+            //smsapiService.mobileRegisterCode(phoneNumber, MathUtils.getRandomCode(6),2);
+            tencentSmsapiService.SendMsgTen(phoneNumber,2);
         }else {
             return DataVo.failure("您今日已超出申请次数！");
         }

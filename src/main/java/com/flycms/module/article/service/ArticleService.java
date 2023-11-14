@@ -77,7 +77,7 @@ public class ArticleService {
             return data=DataVo.failure("标题已存在！");
         }
         if(StringUtils.isBlank(promote.getPicture())){
-            promote.setPicture("/upload/avatar/20231008/908433514935103488/avatar.jpg");
+            promote.setPicture("/www/wwwroot/FlyCms_promote-master/target/dist/FlyCms/uploadfiles/upload/1.jpg");
         }
         this.addPromoteData(promote);
         return data;
@@ -87,8 +87,13 @@ public class ArticleService {
     public Promote addPromoteData(Promote article)   throws Exception {
         //转换为数组
         //String[] str = article.getCategoryId().split(",");
-        SnowFlake snowFlake = new SnowFlake(2, 3);
-        article.setId(snowFlake.nextId());
+
+        if(article.getId() > 0){}
+        else{
+            SnowFlake snowFlake = new SnowFlake(2, 3);
+            article.setId(snowFlake.nextId());
+        }
+
         String code=this.shortUrl();
         //article.setShortUrl(code);
         article.setTitle(StringEscapeUtils.escapeHtml4(article.getTitle()));
@@ -570,6 +575,10 @@ public class ArticleService {
         return articleDao.findArticleByIdPromote(id);
     }
 
+    @Cacheable(value = "article")
+    public List<Article> findPromoteArticleListById(Long id){
+        return articleDao.findIdById(id);
+    }
 
 
     @Transactional
@@ -762,6 +771,10 @@ public class ArticleService {
 
     public List<Promote> findPromoteIndexByPer(Long id,Integer public_flag){
         return promoteDao.getPromoteListPer(id,public_flag);
+    }
+
+    public Promote findPromoteByPer(Long promoteid){
+        return promoteDao.getPromotePer(promoteid);
     }
     /**
      * 文章翻页查询

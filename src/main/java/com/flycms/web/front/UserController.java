@@ -3,11 +3,9 @@ package com.flycms.web.front;
 import com.flycms.constant.Const;
 import com.flycms.core.base.BaseController;
 import com.flycms.core.entity.DataVo;
+import com.flycms.core.entity.UserLoginVo;
 import com.flycms.core.entity.UserVo;
-import com.flycms.core.utils.Base64HelperUtils;
-import com.flycms.core.utils.CookieUtils;
-import com.flycms.core.utils.DateUtils;
-import com.flycms.core.utils.StringHelperUtils;
+import com.flycms.core.utils.*;
 import com.flycms.module.question.service.ImagesService;
 import com.flycms.module.user.model.User;
 import com.flycms.module.user.service.UserService;
@@ -22,21 +20,20 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.text.ParseException;
 import java.util.*;
 
@@ -81,20 +78,21 @@ public class UserController extends BaseController {
         DataVo data = DataVo.failure("操作失败");
         String kaptcha = (String) session.getAttribute("kaptcha");
         // 校验验证码
-        if (captcha != null) {
-            if (!captcha.equalsIgnoreCase(kaptcha)) {
-                return DataVo.failure("验证码错误");
-            }
-            session.removeAttribute(Const.KAPTCHA_SESSION_KEY);
-        }else{
-            return DataVo.failure("验证码不能为空");
-        }
+//        if (captcha != null) {
+//            if (!captcha.equalsIgnoreCase(kaptcha)) {
+//                return DataVo.failure("验证码错误");
+//            }
+//            session.removeAttribute(Const.KAPTCHA_SESSION_KEY);
+//        }else{
+//            return DataVo.failure("验证码不能为空");
+//        }
         if(!StringHelperUtils.checkPhoneNumber(username)) {
             return DataVo.failure("手机号码错误！");
         }
         data = userService.regMobileCode(username);
         return data;
     }
+
 
     /**
      * 添加新用户
@@ -107,17 +105,15 @@ public class UserController extends BaseController {
     @PostMapping(value = "/ucenter/reg_user")
     public DataVo addUser(@RequestParam(value = "username", required = false) String username,
                           @RequestParam(value = "password", required = false) String password,
-                          @RequestParam(value = "password2", required = false) String password2,
-                          @RequestParam(value = "invite", required = false) String invite,
-                          @RequestParam(value = "captcha", required = false) String captcha
+                          @RequestParam(value = "code", required = false) String code
     ) {
         DataVo data = DataVo.failure("操作失败");
         try {
             username=username.trim();
             password=password.trim();
-            password2=password2.trim();
-            captcha=captcha.trim();
-            String kaptcha = (String) session.getAttribute(Const.KAPTCHA_SESSION_KEY);
+            //password2=password2.trim();
+            //captcha=captcha.trim();
+            //String kaptcha = (String) session.getAttribute(Const.KAPTCHA_SESSION_KEY);
             // 校验验证码
 //            if (captcha == null && "".equals(captcha)) {
 //                return DataVo.failure("验证码不能为空");
@@ -126,7 +122,9 @@ public class UserController extends BaseController {
 //            if(!captcha.equals(kaptcha)){
 //                return DataVo.failure("验证码错误");
 //            }
-
+            if (code == null) {
+                return DataVo.failure("验证码不能为空");
+            }
             if (StringUtils.isBlank(username)) {
                 return DataVo.failure("用户名不能为空");
             }
@@ -139,11 +137,12 @@ public class UserController extends BaseController {
             if (password.length() > 16) {
                 return DataVo.failure("密码不能大于16位");
             }
-            if (!password.equals(password2)) {
-                return DataVo.failure("密码两次输入不一致");
-            }
-            data = userService.addUserReg(3,username, password,null,invite,request,response);
-            return DataVo.success("操作成功");
+//            if (!password.equals(password2)) {
+//                return DataVo.failure("密码两次输入不一致");
+//            }
+            data = userService.addUserReg(1,username, password,code,null,request,response);
+            Thread.sleep(3000L);
+            //return DataVo.success("用户注册成功");
         } catch (Exception e) {
             data = DataVo.failure(e.getMessage());
         }
@@ -190,7 +189,7 @@ public class UserController extends BaseController {
             @RequestParam(value = "redirectUrl",required = false) String redirectUrl,
             @RequestParam(value = "captcha", required = false) String captcha) {
         try {
-            String kaptcha = (String) session.getAttribute("kaptcha");
+            //String kaptcha = (String) session.getAttribute("kaptcha");
             if (StringUtils.isBlank(username)) {
                 return DataVo.failure("用户名不能为空");
             }
@@ -209,15 +208,18 @@ public class UserController extends BaseController {
 //            }
             boolean keepLogin = "1".equals(rememberMe) ? true : false;
             User entity = userService.userLogin(username,password,keepLogin,request,response);
+            UserLoginVo retEntiry = new UserLoginVo();
             if(entity==null){
                 return DataVo.failure("帐号或密码错误。");
             }else{
                 //DataVo.success(entity);
+                BeanUtils.copyProperties(entity,retEntiry);
+                retEntiry.setUserId(entity.getUserId().toString());
                 session.removeAttribute(Const.KAPTCHA_SESSION_KEY);
                 if (StringUtils.isNotEmpty(redirectUrl)){
-                    return DataVo.jump("操作成功", redirectUrl,entity);
+                    return DataVo.jump("操作成功", redirectUrl,retEntiry);
                 }
-                return DataVo.jump("操作成功", "/",entity);
+                return DataVo.jump("操作成功", "/",retEntiry);
             }
         } catch (Exception e) {
             return DataVo.failure("帐号或密码错误。");
@@ -354,9 +356,61 @@ public class UserController extends BaseController {
         if(!StringHelperUtils.checkPhoneNumber(mobile)) {
             return DataVo.failure("手机号码错误！");
         }
-        data = userService.safeMobileCode(getUser().getUserId(),mobile);
+        //data = userService.safeMobileCode(getUser().getUserId(),mobile);
+        data = userService.safeMobileCode(Long.valueOf("920137270298947584"),mobile);
         return data;
     }
+
+    @ResponseBody
+    @PostMapping(value = "/user/safemobilecode")
+    public DataVo usersafeMobileCode(@RequestParam(value = "mobile", required = false) String mobile, @RequestParam(value = "userid", required = false) String userid) throws Exception {
+        DataVo data = DataVo.failure("操作失败");
+        String kaptcha = (String) session.getAttribute("kaptcha");
+        // 校验验证码
+//        if (captcha != null) {
+//            if (!captcha.equalsIgnoreCase(kaptcha)) {
+//                return DataVo.failure("验证码错误");
+//            }
+//            session.removeAttribute(Const.KAPTCHA_SESSION_KEY);
+//        }else{
+//            return DataVo.failure("验证码不能为空");
+//        }
+        if(!StringHelperUtils.checkPhoneNumber(mobile)) {
+            return DataVo.failure("手机号码错误！");
+        }
+        //data = userService.safeMobileCode(getUser().getUserId(),mobile);
+        data = userService.safeMobileCode(Long.valueOf(userid),mobile);
+        return data;
+    }
+
+    @ResponseBody
+    @PostMapping(value = "/user/safe_mobile_update")
+    public DataVo usersafeMobile(
+            @RequestParam(value = "password", required = false) String password,
+            @RequestParam(value = "mobile", required = false) String mobile,
+            @RequestParam(value = "code", required = false) String code,
+            @RequestParam(value = "userid", required = false) String userid){
+        DataVo data = DataVo.failure("操作失败");
+        try {
+            if (StringUtils.isBlank(password)) {
+                return DataVo.failure("密码不能为空");
+            } else if (password.length() < 6 && password.length() >= 32) {
+                return DataVo.failure("密码最少6个字符，最多32个字符");
+            }
+            if(!StringHelperUtils.checkPhoneNumber(mobile)) {
+                return DataVo.failure("手机号码错误！");
+            }
+            if (code == null && "".equals(code)) {
+                return DataVo.failure("验证码不能为空");
+            }
+            //data=userService.updateSafeMobile(getUser().getUserId(),password, mobile, code);
+            data=userService.updateSafeMobile(Long.valueOf(userid),password, mobile, code);
+        } catch (Exception e) {
+            data = DataVo.failure(e.getMessage());
+        }
+        return data;
+    }
+
 
     @ResponseBody
     @PostMapping(value = "/ucenter/safe_mobile_update")
@@ -377,7 +431,8 @@ public class UserController extends BaseController {
             if (code == null && "".equals(code)) {
                 return DataVo.failure("验证码不能为空");
             }
-            data=userService.updateSafeMobile(getUser().getUserId(),password, mobile, code);
+            //data=userService.updateSafeMobile(getUser().getUserId(),password, mobile, code);
+            data=userService.updateSafeMobile(Long.valueOf("920137270298947584"),password, mobile, code);
         } catch (Exception e) {
             data = DataVo.failure(e.getMessage());
         }
@@ -579,6 +634,47 @@ public class UserController extends BaseController {
         BufferedImage bufferedImage = ImageIO.read(bais);
         data =imagesService.saveAvatarDataFile(getUser(), bufferedImage);
         bais.close();
+        return data;
+    }
+
+    @ResponseBody
+    @PostMapping("/user/setAvatar")
+    public DataVo setAvatar(@RequestParam(value = "avatar", required = true)MultipartFile avatar, @RequestParam(value = "userid", required = true)String userid) throws IOException, ParseException {
+        DataVo data = DataVo.failure("操作失败");
+        if (!avatar.isEmpty() && StringUtils.isNotEmpty(userid)) {
+            try {
+                byte[] bytes = avatar.getBytes();
+                ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+                BufferedImage bufferedImage = ImageIO.read(bais);
+                data =imagesService.saveAvatarDataFile(getUser(Long.valueOf(userid)), bufferedImage);
+                bais.close();
+            } catch (Exception e) {
+
+            }
+        }else {
+            return DataVo.failure("头像不能为空");
+        }
+        return data;
+    }
+
+    @ResponseBody
+    @PostMapping("/promote/setAvatar")
+    public DataVo setPromoteAvatar(@RequestParam(value = "avatar", required = true)MultipartFile avatar) throws IOException, ParseException {
+        DataVo data = DataVo.failure("操作失败");
+        if (!avatar.isEmpty()) {
+            try {
+                byte[] bytes = avatar.getBytes();
+                ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+                BufferedImage bufferedImage = ImageIO.read(bais);
+                SnowFlake snowFlake = new SnowFlake(2, 3);
+                data =imagesService.saveAvatarPromoteFile(String.valueOf(snowFlake.nextId()), bufferedImage);
+                bais.close();
+            } catch (Exception e) {
+
+            }
+        }else {
+            return DataVo.failure("头像不能为空");
+        }
         return data;
     }
 

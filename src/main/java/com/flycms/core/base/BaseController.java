@@ -1,6 +1,7 @@
 package com.flycms.core.base;
 
 import com.flycms.core.utils.AdminSessionUtils;
+import com.flycms.module.article.model.Promote;
 import com.flycms.module.article.service.ArticleService;
 import com.flycms.module.user.utils.UserSessionUtils;
 import com.flycms.module.admin.model.Admin;
@@ -39,6 +40,7 @@ public class BaseController {
 	protected AdminService adminService;
     @Autowired
 	protected UserService userService;
+
 	@Autowired
 	protected ArticleService articleService;
     @Resource
@@ -60,6 +62,12 @@ public class BaseController {
 		}
 	}
 
+	protected User getUser(Long userid) {
+			return userService.findUserById(userid,0);
+	}
+	protected Promote getPromote(Long promoteid) {
+		return articleService.findPromoteByPer(promoteid);
+	}
 	/**
 	 * 获取用户信息
 	 *

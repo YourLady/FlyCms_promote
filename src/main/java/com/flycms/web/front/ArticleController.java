@@ -1,6 +1,7 @@
 package com.flycms.web.front;
 
 import com.alibaba.fastjson.JSONArray;
+import com.flycms.constant.Const;
 import com.flycms.core.base.BaseController;
 import com.flycms.core.entity.*;
 import com.flycms.core.utils.PromoteSaveFilter;
@@ -134,6 +135,20 @@ public class ArticleController extends BaseController {
         return DataVo.jump("操作成功", null,article);
     }
 
+    @ResponseBody
+    @PostMapping(value = "/findPromoteArticleListById/{promoteid}")
+    public DataVo findPromoteArticleListById(@PathVariable(value = "promoteid", required = false) String promoteid){
+        DataVo data = DataVo.failure("操作失败");
+        if (!NumberUtils.isNumber(promoteid)) {
+            return data = DataVo.failure("id参数错误");
+        }
+        List<Article> article=articleService.findPromoteArticleListById(Long.parseLong(promoteid));
+        if(article==null){
+            return data = DataVo.failure("该内容不存在或者未审核！");
+        }
+        return DataVo.jump("操作成功", null,article);
+    }
+
 
 
     //保存添加文章
@@ -189,8 +204,8 @@ public class ArticleController extends BaseController {
             }
 
             data = articleService.addArticle2(article);
-            PromoteSaveFilter util = new PromoteSaveFilter();
-            util.SaveFileToFolder("/www/wwwroot/promote_file/",article,userService);
+            //PromoteSaveFilter util = new PromoteSaveFilter();
+           // util.SaveFileToFolder(Const.File_PATH,article,userService);
         } catch (Exception e) {
             data = DataVo.failure(e.getMessage());
         }
@@ -210,8 +225,8 @@ public class ArticleController extends BaseController {
             }
 
             data = articleService.editArticleById2(article);
-            PromoteSaveFilter util = new PromoteSaveFilter();
-            util.EditFileToFolder("/www/wwwroot/promote_file/",article,userService);
+            //PromoteSaveFilter util = new PromoteSaveFilter();
+           // util.EditFileToFolder(Const.File_PATH,article,userService);
         } catch (Exception e) {
             data = DataVo.failure(e.getMessage());
         }

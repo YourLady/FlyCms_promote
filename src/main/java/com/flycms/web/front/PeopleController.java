@@ -3,6 +3,7 @@ package com.flycms.web.front;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.flycms.core.base.BaseController;
+import com.flycms.core.entity.DataVo;
 import com.flycms.module.article.model.Article;
 import com.flycms.module.article.model.Promote;
 import com.flycms.module.article.service.ArticleService;
@@ -110,7 +111,7 @@ public class PeopleController extends BaseController {
 
     @PostMapping(value = "/people/{shortUrl}/{publicFlag}/promotes")
     @ResponseBody
-    public HashMap<String,JSONArray> peoplePromote(@PathVariable(value = "shortUrl", required = false) String shortUrl,@PathVariable(value = "publicFlag", required = false) String publicFlag){
+    public DataVo peoplePromote(@PathVariable(value = "shortUrl", required = false) String shortUrl, @PathVariable(value = "publicFlag", required = false) String publicFlag){
         if (StringUtils.isBlank(shortUrl)) {
             return null;
         }
@@ -147,13 +148,16 @@ public class PeopleController extends BaseController {
             }
         }
         RetTree.put(title1,Jarry);
-        return RetTree;
+        if(AList.size() == 0){
+            return DataVo.success("查询成功,无记录",RetTree);
+        }
+        return DataVo.success("查询成功",RetTree);
     }
 
 
     @PostMapping(value = "/people/{shortUrl}/{publicFlag}/promotesList")
     @ResponseBody
-    public HashMap<String,JSONArray> peoplePromoteList(@PathVariable(value = "shortUrl", required = false) String shortUrl,@PathVariable(value = "publicFlag", required = false) String publicFlag){
+    public DataVo peoplePromoteList(@PathVariable(value = "shortUrl", required = false) String shortUrl,@PathVariable(value = "publicFlag", required = false) String publicFlag){
         if (StringUtils.isBlank(shortUrl)) {
             return null;
         }
@@ -177,7 +181,10 @@ public class PeopleController extends BaseController {
             Jarry.add(object);
         }
         RetTree.put(people.getUserId().toString(),Jarry);
-        return RetTree;
+        if(AList.size() == 0){
+            return DataVo.success("查询成功,无记录",RetTree);
+        }
+        return DataVo.success("查询成功",RetTree);
     }
     //用户问题列表页面
     @GetMapping(value = "/people/{shortUrl}/share")

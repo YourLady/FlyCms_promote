@@ -18,5 +18,6 @@ public interface PromoteDao {
     public int addPromote(Promote promote);
     public int checkPromoteByTitle(@Param("title") String title,@Param("userId") Long userId,@Param("id") Long id);
 
+    public Promote getPromotePer(@Param("id") Long id);
     Integer selectLike(@Param("userId") String userId, @Param("publishContentId") Long publishContentId);
 }
